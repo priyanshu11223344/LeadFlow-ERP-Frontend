@@ -38,3 +38,20 @@ export const createOrder =
       throw error;
     }
   };
+  // GET SINGLE ORDER
+export const getOrderById = async (id) => {
+  try {
+    const response = await API.get(
+      `/orders/${id}`
+    );
+
+    return response.data;
+  } catch (error) {
+    console.log(
+      "GET ORDER BY ID ERROR:",
+      error
+    );
+
+    throw error;
+  }
+};

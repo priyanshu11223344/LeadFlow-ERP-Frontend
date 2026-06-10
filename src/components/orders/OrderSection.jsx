@@ -7,29 +7,40 @@ import {
 import {
   useGetClients,
 } from "../../features/clients/clientHooks";
-
+import DispatchModal from "../dispatch/DispatchModal";
 import {
   useCreateOrder,
   useGetOrders,
 } from "../../features/orders/orderHooks";
+import {
+  useGetDealsByLead,
+} from "../../features/deals/dealHooks";
 // --- NEW ORDER MODAL COMPONENT ---
 const NewOrderModal = ({ isOpen, onClose }) => {
 
 
-  const [newItemData, setNewItemData] =
-    useState({
-      itemName: "",
-      sku: "",
-      price: 0,
-    });
   const [selectedClient, setSelectedClient] =
     useState("");
+    const [selectedDeal,
+      setSelectedDeal] =
+      useState("");
   const {
     data: clientsData,
   } = useGetClients();
 
   const clients =
     clientsData?.data || [];
+    const selectedClientData =
+  clients.find(
+    (client) =>
+      client._id ===
+      selectedClient
+  );
+  const {
+    data: dealsData,
+  } = useGetDealsByLead(
+    selectedClientData?.leadId
+  );
   const {
     data: inventoryData,
   } = useGetInventory();
@@ -64,6 +75,10 @@ const NewOrderModal = ({ isOpen, onClose }) => {
       searchTerm: "",
       showDropdown: false,
       showNewItemForm: false,
+
+      newItemName: "",
+      newItemSku: "",
+      newItemPrice: 0,
     },
   ]);
 
@@ -82,6 +97,10 @@ const NewOrderModal = ({ isOpen, onClose }) => {
         searchTerm: "",
         showDropdown: false,
         showNewItemForm: false,
+
+        newItemName: "",
+        newItemSku: "",
+        newItemPrice: 0,
       },
     ]);
   };
@@ -119,7 +138,8 @@ const NewOrderModal = ({ isOpen, onClose }) => {
           {
             clientId:
               selectedClient,
-
+              dealId:
+              selectedDeal,
             poNumber,
             items: items.map(
               (item) => ({
@@ -157,7 +177,6 @@ const NewOrderModal = ({ isOpen, onClose }) => {
     const prc = parseFloat(item.price) || 0;
     return sum + (qty * prc);
   }, 0);
-
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden flex flex-col">
@@ -204,6 +223,38 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                 ))}
               </select>
             </div>
+            <div className="space-y-2">
+  <label className="text-xs font-bold text-gray-700 tracking-wide">
+    Select Deal
+  </label>
+
+  <select
+    value={selectedDeal}
+    onChange={(e) =>
+      setSelectedDeal(
+        e.target.value
+      )
+    }
+    className="w-full px-4 py-3 rounded-xl border border-gray-200"
+  >
+    <option value="">
+      Select Deal
+    </option>
+
+    {dealsData?.data?.map(
+      (deal) => (
+        <option
+          key={deal._id}
+          value={deal._id}
+        >
+          {deal.dealName}
+          {" - ₹"}
+          {deal.amount}
+        </option>
+      )
+    )}
+  </select>
+</div>
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-700 tracking-wide">P.O. Number</label>
@@ -269,79 +320,44 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                         {item.showDropdown && (
                           <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto mt-1">
 
-                            {getFilteredInventory(
-                              item.searchTerm
-                            ).map(
-                              (inv) => (
-                                <div
-                                  key={inv._id}
-                                  onClick={() => {
-                                    const updatedItems = [...items];
-                                  
-                                    updatedItems[idx] = {
-                                      ...updatedItems[idx],
-                                  
-                                      inventoryId: inv._id,
-                                      name: inv.itemName,
-                                      sku: inv.sku,
-                                      price: inv.price,
-                                  
-                                      searchTerm: `${inv.itemName} - ${inv.sku}`,
-                                      showDropdown: false,
-                                    };
-                                  
-                                    setItems(updatedItems);
-                                  }}
-                                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 text-sm"
-                                >
-                                  <div className="font-medium">
-                                    {inv.itemName}
-                                  </div>
-
-                                  <div className="text-xs text-gray-500">
-                                    SKU: {inv.sku}
-                                    {" • "}
-                                    Stock: {inv.quantity}
-                                    {" • "}
-                                    {inv.status}
-                                  </div>
-                                </div>
-                              )
-                            )}
-
-                            {getFilteredInventory(
-                              item.searchTerm
-                            ).length === 0 && (
-                                <div className="p-4">
+                            <div className="p-4 border-t">
+                              {getFilteredInventory(
+                                item.searchTerm
+                              ).length === 0 && (
                                   <div className="text-sm text-gray-500 mb-3">
                                     No inventory item found
                                   </div>
+                                )}
 
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updatedItems = [...items];
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const updatedItems = [...items];
 
-                                      updatedItems[idx].showNewItemForm =
-                                        true;
+                                  updatedItems[idx].showNewItemForm =
+                                    true;
 
-                                      updatedItems[idx].showDropdown =
-                                        false;
+                                  updatedItems[idx].showDropdown =
+                                    false;
 
-                                      setItems(updatedItems);
+                                  updatedItems[idx].newItemName =
+                                    item.searchTerm;
 
-                                      setNewItemData({
-                                        itemName: item.searchTerm,
-                                        sku: "",
-                                        price: 0,
-                                      });
-                                    }}
-                                    className="text-blue-600 font-semibold text-sm"
-                                  >
-                                    + Request New Item
-                                  </button>
-                                </div>
-                              )}
+                                  updatedItems[idx].newItemSku =
+                                    "";
+
+                                  updatedItems[idx].newItemPrice =
+                                    0;
+
+                                  setItems(updatedItems);
+                                }}
+                                className="text-blue-600 font-semibold text-sm"
+                              >
+                                + Request New Item
+                              </button>
+                            </div>
+
+                           
                           </div>
                         )}
 
@@ -356,39 +372,45 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                           <input
                             type="text"
                             placeholder="Item Name"
-                            value={newItemData.itemName}
-                            onChange={(e) =>
-                              setNewItemData({
-                                ...newItemData,
-                                itemName: e.target.value,
-                              })
-                            }
+                            value={item.newItemName}
+                            onChange={(e) => {
+                              const updatedItems = [...items];
+
+                              updatedItems[idx].newItemName =
+                                e.target.value;
+
+                              setItems(updatedItems);
+                            }}
                             className="w-full border border-gray-200 rounded-lg px-3 py-2"
                           />
 
                           <input
                             type="text"
                             placeholder="SKU"
-                            value={newItemData.sku}
-                            onChange={(e) =>
-                              setNewItemData({
-                                ...newItemData,
-                                sku: e.target.value,
-                              })
-                            }
+                            value={item.newItemSku}
+                            onChange={(e) => {
+                              const updatedItems = [...items];
+
+                              updatedItems[idx].newItemSku =
+                                e.target.value;
+
+                              setItems(updatedItems);
+                            }}
                             className="w-full border border-gray-200 rounded-lg px-3 py-2"
                           />
 
                           <input
                             type="number"
                             placeholder="Expected Price"
-                            value={newItemData.price}
-                            onChange={(e) =>
-                              setNewItemData({
-                                ...newItemData,
-                                price: e.target.value,
-                              })
-                            }
+                            value={item.newItemPrice}
+                            onChange={(e) => {
+                              const updatedItems = [...items];
+
+                              updatedItems[idx].newItemPrice =
+                                e.target.value;
+
+                              setItems(updatedItems);
+                            }}
                             className="w-full border border-gray-200 rounded-lg px-3 py-2"
                           />
 
@@ -399,11 +421,17 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 
                               updatedItems[idx] = {
                                 ...updatedItems[idx],
+
                                 inventoryId: null,
-                                name: newItemData.itemName,
-                                sku: newItemData.sku,
+
+                                name:
+                                  item.newItemName,
+
+                                sku:
+                                  item.newItemSku,
+
                                 price: Number(
-                                  newItemData.price
+                                  item.newItemPrice
                                 ),
                               };
 
@@ -411,7 +439,7 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                                 false;
 
                               updatedItems[idx].searchTerm =
-                                newItemData.itemName;
+                                item.newItemName;
 
                               setItems(updatedItems);
                             }}
@@ -421,7 +449,7 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                           </button>
                         </div>
                       )}
-                      
+
                     </div>
                     <input
                       type="text"
@@ -506,6 +534,12 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 {/* --- MAIN MAIN ORDERS PAGE --- */ }
 const OrdersSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
+  const handleDispatch = (order) => {
+    setSelectedOrder(order);
+    setIsDispatchModalOpen(true);
+  };
 
   const {
     data: ordersData,
@@ -544,9 +578,18 @@ const OrdersSection = () => {
             <tr className="bg-gray-50/50 border-b border-gray-100">
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Order #</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Client</th>
+              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+  Deal
+</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Items</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Total</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">Date</th>
+              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+                Status
+              </th>
+              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+                Actions
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
@@ -554,11 +597,54 @@ const OrdersSection = () => {
               <tr key={i} className="hover:bg-gray-50/50 transition-colors">
                 <td className="px-8 py-5 font-bold text-gray-950 text-sm">{order.poNumber}</td>
                 <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">{order.clientId?.clientName}</td>
+                <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">
+  {order.dealId?.dealName || "-"}
+</td>
                 <td className="px-8 py-5 text-center text-xs text-gray-400 font-medium">{order.items.length} items</td>
                 <td className="px-8 py-5 text-center font-extrabold text-gray-950 text-sm">₹{order.totalAmount}</td>
-                <td className="px-8 py-5 text-right text-xs font-semibold text-gray-400">{new Date(
-                  order.createdAt
-                ).toLocaleDateString()}</td>
+                <td className="px-8 py-5 text-right text-xs font-semibold text-gray-400">
+                  {new Date(order.createdAt).toLocaleDateString()}
+                </td>
+
+                <td className="px-8 py-5 text-center">
+                  <span
+                    className={`px-2 py-1 rounded text-[10px] font-bold ${order.status === "DELIVERED"
+                      ? "bg-green-100 text-green-700"
+                      : order.status === "PARTIALLY_DISPATCHED"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : order.status === "ALLOCATED"
+                          ? "bg-blue-100 text-blue-700"
+                          : order.status === "PARTIALLY_ALLOCATED"
+                            ? "bg-orange-100 text-orange-700"
+                            : order.status === "PENDING_PROCUREMENT"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                      }`}
+                  >
+                    {order.status}
+                  </span>
+                </td>
+
+                <td className="px-8 py-5 text-center">
+                  <button
+                    disabled={
+                      order.status === "PENDING" ||
+                      order.status === "PENDING_PROCUREMENT" ||
+                      order.status === "DELIVERED" ||
+                      order.status === "COMPLETED"
+                    }
+                    onClick={() => handleDispatch(order)}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all ${order.status === "PENDING" ||
+                      order.status === "PENDING_PROCUREMENT" ||
+                      order.status === "DELIVERED" ||
+                      order.status === "COMPLETED"
+                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                      : "bg-black text-white hover:bg-gray-800"
+                      }`}
+                  >
+                    Dispatch
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -568,6 +654,13 @@ const OrdersSection = () => {
       <NewOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+      <DispatchModal
+        isOpen={isDispatchModalOpen}
+        onClose={() =>
+          setIsDispatchModalOpen(false)
+        }
+        order={selectedOrder}
       />
     </div>
   );

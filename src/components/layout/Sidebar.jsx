@@ -1,18 +1,60 @@
 import React from 'react';
-import { LayoutDashboard, Users, Briefcase, Clock, Package, Settings, LogOut, TrendingUp } from 'lucide-react';
-
+import { LayoutDashboard, Users, Briefcase, Clock, Package, Settings, LogOut, TrendingUp,Receipt } from 'lucide-react';
+import {
+  Building2,CreditCard,BarChart3,ShoppingCart,Truck,ShoppingBag,ClipboardCheck
+} from "lucide-react";
 const Sidebar = ({ activeSection, setActiveSection }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'leads', label: 'Leads', icon: Users },
+    {
+      id: "clients",
+      label: "Clients",
+      icon: Building2,
+    },
     { id: 'deals', label: 'Deals', icon: Briefcase },
     { id: 'orders', label: 'Orders', icon: Clock },
+    {
+      id: "invoices",
+      label: "Invoices",
+      icon: Receipt,
+    },
+    {
+      id: "payments",
+      label: "Payments",
+      icon: CreditCard,
+    },
     { id: 'inventory', label: 'Inventory', icon: Package },
+    {
+      id: "reports",
+      label: "Reports",
+      icon: BarChart3,
+    },
+    {
+      id: "purchaseRequisitions",
+      label: "Purchase Requisitions",
+      icon: ShoppingCart,
+    },
+    {
+      id: "vendors",
+      label: "Vendors",
+      icon: Truck,
+    },
+    {
+      id: "vendorPurchaseOrders",
+      label: "Vendor POs",
+      icon: ShoppingBag,
+    },
+    {
+      id: "grn",
+      label: "GRN",
+      icon: ClipboardCheck,
+    },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 flex flex-col h-full">
+    <aside className="w-72 bg-white border-r border-gray-100 flex flex-col h-screen">
       <div className="p-6 flex items-center gap-3">
         <div className="bg-black p-1.5 rounded-lg">
           <TrendingUp className="w-6 h-6 text-white" />
@@ -20,7 +62,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
         <span className="text-xl font-bold tracking-tight text-gray-950">LeadFlow</span>
       </div>
 
-      <nav className="flex-1 px-4 space-y-1.5 mt-4">
+      <nav className="flex-1 px-4 space-y-1.5 mt-4 overflow-y-auto">
         {menuItems.map((item) => (
           <button
             key={item.id}

@@ -1,5 +1,5 @@
 import { useQuery,useMutation,useQueryClient } from "@tanstack/react-query";
-import { getDeals,getDealById,createDeal,updateDeal,deleteDeal } from "./dealAPI";
+import { getDeals,getDealById,createDeal,updateDeal,deleteDeal,getDealsByLead } from "./dealAPI";
 
 //GET ALL DEALS
 export const useGetDeals=()=>{
@@ -123,5 +123,22 @@ export const useUpdateDeal = () => {
           error
         );
       },
+    });
+  };
+  export const
+  useGetDealsByLead =
+  (leadId) => {
+    return useQuery({
+      queryKey: [
+        "deals",
+        leadId,
+      ],
+
+      queryFn: () =>
+        getDealsByLead(
+          leadId
+        ),
+
+      enabled: !!leadId,
     });
   };

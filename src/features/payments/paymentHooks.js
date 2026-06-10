@@ -5,55 +5,45 @@ import {
   } from "@tanstack/react-query";
   
   import {
-    getOrders,
-    createOrder,
-    getOrderById,
-  } from "./orderAPI";
+    getPayments,
+    createPayment,
+  } from "./paymentAPI";
   
-  export const useGetOrders =
+  // GET
+  export const useGetPayments =
     () => {
       return useQuery({
-        queryKey: ["orders"],
-  
-        queryFn: getOrders,
+        queryKey: ["payments"],
+        queryFn: getPayments,
       });
     };
   
-  export const useCreateOrder =
+  // CREATE
+  export const useCreatePayment =
     () => {
       const queryClient =
         useQueryClient();
   
       return useMutation({
-        mutationFn: createOrder,
+        mutationFn:
+          createPayment,
   
         onSuccess: () => {
           queryClient.invalidateQueries(
             {
-              queryKey: ["orders"],
+              queryKey: [
+                "payments",
+              ],
             }
           );
   
           queryClient.invalidateQueries(
             {
               queryKey: [
-                "inventory",
+                "invoices",
               ],
             }
           );
         },
-      });
-    };
-
-    export const useGetOrderById = (
-      id
-    ) => {
-      return useQuery({
-        queryKey: ["order", id],
-    
-        queryFn: () =>
-          getOrderById(id),
-    
-        enabled: !!id,
       });
     };

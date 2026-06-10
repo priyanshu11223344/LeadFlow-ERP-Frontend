@@ -5,55 +5,43 @@ import {
   } from "@tanstack/react-query";
   
   import {
-    getOrders,
-    createOrder,
-    getOrderById,
-  } from "./orderAPI";
+    getDispatches,
+    createDispatch,
+  } from "./dispatchAPI";
   
-  export const useGetOrders =
+  export const useGetDispatches =
     () => {
       return useQuery({
-        queryKey: ["orders"],
+        queryKey: ["dispatches"],
   
-        queryFn: getOrders,
+        queryFn: getDispatches,
       });
     };
   
-  export const useCreateOrder =
+  export const useCreateDispatch =
     () => {
       const queryClient =
         useQueryClient();
   
       return useMutation({
-        mutationFn: createOrder,
+        mutationFn: createDispatch,
   
         onSuccess: () => {
           queryClient.invalidateQueries(
             {
-              queryKey: ["orders"],
+              queryKey: [
+                "dispatches",
+              ],
             }
           );
   
           queryClient.invalidateQueries(
             {
               queryKey: [
-                "inventory",
+                "orders",
               ],
             }
           );
         },
-      });
-    };
-
-    export const useGetOrderById = (
-      id
-    ) => {
-      return useQuery({
-        queryKey: ["order", id],
-    
-        queryFn: () =>
-          getOrderById(id),
-    
-        enabled: !!id,
       });
     };

@@ -99,3 +99,13 @@ export const createDeal = async (data) => {
       throw error;
     }
   };
+
+  export const getDealsByLead =
+  async (leadId) => {
+    const response =
+      await API.get(
+        `/deals/lead/${leadId}`
+      );
+
+    return response.data;
+  };

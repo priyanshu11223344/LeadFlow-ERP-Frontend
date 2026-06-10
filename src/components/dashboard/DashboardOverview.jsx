@@ -1,12 +1,71 @@
 import React from 'react';
 import { User, DollarSign, Clock, Package, Check, Sparkles, TrendingUp, Plus } from 'lucide-react';
-
+import { useGetLeads } from "../../features/leads/leadHooks";
+import { useGetDeals } from "../../features/deals/dealHooks";
+import { useGetOrders } from "../../features/orders/orderHooks";
+import { useGetInventory } from "../../features/inventory/inventoryHooks";
 const DashboardOverview = ({ onOpenModal }) => {
+  const { data: leadsData } = useGetLeads();
+  const { data: dealsData } = useGetDeals();
+  const { data: ordersData } = useGetOrders();
+  const { data: inventoryData } = useGetInventory();
+
+  const leads = leadsData?.data || [];
+  const deals = dealsData?.data || [];
+  const orders = ordersData?.data || [];
+  const inventory = inventoryData?.data || [];
+  const totalLeads = leads.length;
+
+  const totalOrders = orders.length;
+
+  const lowStockCount = inventory.filter(
+    (item) =>
+      item.status === "LOW_STOCK" ||
+      item.status === "OUT_OF_STOCK" ||
+      item.status === "TO_BE_ORDERED"
+  ).length;
+
+  const totalPipeline = deals.reduce(
+    (sum, deal) =>
+      deal.status !== "lost" &&
+        deal.status !== "won"
+        ? sum + Number(deal.amount || 0)
+        : sum,
+    0
+  );
+
+  const wonDeals = deals.filter(
+    (deal) => deal.status === "won"
+  ).length;
   const stats = [
-    { title: 'Total Leads', value: '3', icon: User, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { title: 'Total Pipeline', value: '$4,567,890.00', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-    { title: 'Total Orders', value: '8', icon: Clock, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { title: 'Low Stock', value: '4', icon: Package, color: 'text-red-600', bg: 'bg-red-50' },
+    {
+      title: "Total Leads",
+      value: totalLeads,
+      icon: User,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+    },
+    {
+      title: "Total Pipeline",
+      value: `$${totalPipeline.toLocaleString()}`,
+      icon: DollarSign,
+      color: "text-green-600",
+      bg: "bg-green-50",
+    },
+    {
+      title: "Total Orders",
+      value: totalOrders,
+      icon: Clock,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+    },
+    {
+      title: "Low Stock",
+      value: lowStockCount,
+      icon: Package,
+      color: "text-red-600",
+      bg: "bg-red-50",
+    },
   ];
 
   return (
@@ -17,7 +76,7 @@ const DashboardOverview = ({ onOpenModal }) => {
           <h2 className="text-3xl font-extrabold text-gray-950 tracking-tighter">Overview</h2>
           <p className="text-gray-500 text-sm font-medium">Manage your business growth effectively.</p>
         </div>
-        <button 
+        <button
           onClick={onOpenModal}
           className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2.5 hover:bg-gray-800 transition-all shadow-md group"
         >
@@ -53,7 +112,7 @@ const DashboardOverview = ({ onOpenModal }) => {
             </div>
             <div>
               <p className="text-gray-500 text-sm font-medium">Won Deals</p>
-              <h3 className="text-3xl font-extrabold mt-1 text-gray-950 tracking-tighter">2</h3>
+              <h3 className="text-3xl font-extrabold mt-1 text-gray-950 tracking-tighter">{wonDeals}</h3>
             </div>
           </div>
         </div>
@@ -61,7 +120,7 @@ const DashboardOverview = ({ onOpenModal }) => {
 
       {/* FIXED BOTTOM SECTION: Recent Leads and High Value Deals in the same line */}
       <div className="flex flex-col lg:flex-row gap-8 items-start pb-10">
-        
+
         {/* RECENT LEADS (Matched width and padding to photo) */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex-1 w-full">
           <div className="flex justify-between items-center mb-8">
@@ -71,27 +130,48 @@ const DashboardOverview = ({ onOpenModal }) => {
             <span className="text-gray-400 font-bold text-2xl cursor-pointer">›</span>
           </div>
           <div className="space-y-6">
-            {[
-              { name: 'abc', sub: 'abc', date: 'May 05, 12:49', initial: 'a' },
-              { name: 'priyanshu', sub: 'abcs', date: 'May 04, 15:21', initial: 'p' },
-              { name: 'Yash Dharmani', sub: 'Silly stitches', date: 'Apr 25, 17:08', initial: 'Y' }
-            ].map((lead, i) => (
-              <div key={i} className="flex justify-between items-center py-1">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center font-bold text-lg uppercase">
-                    {lead.initial}
+            {leads
+              .slice()
+              .sort(
+                (a, b) =>
+                  new Date(b.createdAt) -
+                  new Date(a.createdAt)
+              )
+              .slice(0, 5)
+              .map((lead) => (
+                <div
+                  key={lead._id}
+                  className="flex justify-between items-center py-1"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center font-bold text-lg uppercase">
+                      {lead.name?.charAt(0)}
+                    </div>
+
+                    <div>
+                      <p className="text-base font-bold text-gray-950">
+                        {lead.name}
+                      </p>
+
+                      <p className="text-xs text-gray-400 font-medium">
+                        {lead.companyName || "No Company"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-base font-bold text-gray-950">{lead.name}</p>
-                    <p className="text-xs text-gray-400 font-medium">{lead.sub}</p>
+
+                  <div className="text-right">
+                    <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-wider">
+                      Created At
+                    </p>
+
+                    <p className="text-xs text-gray-600 font-semibold">
+                      {new Date(
+                        lead.createdAt
+                      ).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-wider">Created At</p>
-                  <p className="text-xs text-gray-600 font-semibold">{lead.date}</p>
-                </div>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 
@@ -101,24 +181,54 @@ const DashboardOverview = ({ onOpenModal }) => {
             <h3 className="text-xl font-extrabold text-gray-950 tracking-tight flex items-center gap-3">
               High Value Deals
             </h3>
-            <TrendingUp className="w-5 h-5 text-gray-400"/>
+            <TrendingUp className="w-5 h-5 text-gray-400" />
           </div>
           <div className="space-y-6">
-            {[
-              { name: 'nkjbjblubjboub', value: '$4,567,890.00', target: 'Apr 25' },
-              { name: 'asdaddsdf', value: '$0.00', target: 'May 04' }
-            ].map((deal, i) => (
-              <div key={i} className="flex justify-between items-center py-1">
-                <div>
-                  <p className="text-base font-bold text-gray-950">{deal.name}</p>
-                  <div className="flex gap-2.5 items-center mt-1.5">
-                    <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-extrabold tracking-wide">WIN</span>
-                    <span className="text-xs text-gray-400 font-medium tracking-tight">Target: {deal.target}</span>
+            {deals
+              .filter(
+                (deal) =>
+                  deal.status === "won"
+              )
+              .sort(
+                (a, b) =>
+                  Number(b.amount) -
+                  Number(a.amount)
+              )
+              .slice(0, 5)
+              .map((deal) => (
+                <div
+                  key={deal._id}
+                  className="flex justify-between items-center py-1"
+                >
+                  <div>
+                    <p className="text-base font-bold text-gray-950">
+                      {deal.dealName}
+                    </p>
+
+                    <div className="flex gap-2.5 items-center mt-1.5">
+                      <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-extrabold tracking-wide">
+                        WIN
+                      </span>
+
+                      <span className="text-xs text-gray-400 font-medium tracking-tight">
+                        Target:{" "}
+                        {deal.closeDate
+                          ? new Date(
+                            deal.closeDate
+                          ).toLocaleDateString()
+                          : "-"}
+                      </span>
+                    </div>
                   </div>
+
+                  <p className="text-lg font-bold text-gray-950 tracking-tight">
+                    $
+                    {Number(
+                      deal.amount || 0
+                    ).toLocaleString()}
+                  </p>
                 </div>
-                <p className="text-lg font-bold text-gray-950 tracking-tight">{deal.value}</p>
-              </div>
-            ))}
+              ))}
           </div>
         </div>
 

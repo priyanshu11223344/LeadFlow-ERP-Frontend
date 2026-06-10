@@ -21,21 +21,21 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 
   const [selectedClient, setSelectedClient] =
     useState("");
-    const [selectedDeal,
-      setSelectedDeal] =
-      useState("");
+  const [selectedDeal,
+    setSelectedDeal] =
+    useState("");
   const {
     data: clientsData,
   } = useGetClients();
 
   const clients =
     clientsData?.data || [];
-    const selectedClientData =
-  clients.find(
-    (client) =>
-      client._id ===
-      selectedClient
-  );
+  const selectedClientData =
+    clients.find(
+      (client) =>
+        client._id ===
+        selectedClient
+    );
   const {
     data: dealsData,
   } = useGetDealsByLead(
@@ -138,7 +138,7 @@ const NewOrderModal = ({ isOpen, onClose }) => {
           {
             clientId:
               selectedClient,
-              dealId:
+            dealId:
               selectedDeal,
             poNumber,
             items: items.map(
@@ -224,37 +224,37 @@ const NewOrderModal = ({ isOpen, onClose }) => {
               </select>
             </div>
             <div className="space-y-2">
-  <label className="text-xs font-bold text-gray-700 tracking-wide">
-    Select Deal
-  </label>
+              <label className="text-xs font-bold text-gray-700 tracking-wide">
+                Select Deal
+              </label>
 
-  <select
-    value={selectedDeal}
-    onChange={(e) =>
-      setSelectedDeal(
-        e.target.value
-      )
-    }
-    className="w-full px-4 py-3 rounded-xl border border-gray-200"
-  >
-    <option value="">
-      Select Deal
-    </option>
+              <select
+                value={selectedDeal}
+                onChange={(e) =>
+                  setSelectedDeal(
+                    e.target.value
+                  )
+                }
+                className="w-full px-4 py-3 rounded-xl border border-gray-200"
+              >
+                <option value="">
+                  Select Deal
+                </option>
 
-    {dealsData?.data?.map(
-      (deal) => (
-        <option
-          key={deal._id}
-          value={deal._id}
-        >
-          {deal.dealName}
-          {" - ₹"}
-          {deal.amount}
-        </option>
-      )
-    )}
-  </select>
-</div>
+                {dealsData?.data?.map(
+                  (deal) => (
+                    <option
+                      key={deal._id}
+                      value={deal._id}
+                    >
+                      {deal.dealName}
+                      {" - ₹"}
+                      {deal.amount}
+                    </option>
+                  )
+                )}
+              </select>
+            </div>
 
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-700 tracking-wide">P.O. Number</label>
@@ -320,44 +320,66 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                         {item.showDropdown && (
                           <div className="absolute z-50 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-56 overflow-y-auto mt-1">
 
-                            <div className="p-4 border-t">
-                              {getFilteredInventory(
-                                item.searchTerm
-                              ).length === 0 && (
-                                  <div className="text-sm text-gray-500 mb-3">
-                                    No inventory item found
+                            <div className="py-2">
+
+                              {getFilteredInventory(item.searchTerm).map((inv) => (
+                                <button
+                                  key={inv._id}
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedItems = [...items];
+
+                                    updatedItems[idx] = {
+                                      ...updatedItems[idx],
+                                      inventoryId: inv._id,
+                                      name: inv.itemName,
+                                      sku: inv.sku,
+                                      price: inv.price,
+                                      searchTerm: inv.itemName,
+                                      showDropdown: false,
+                                    };
+
+                                    setItems(updatedItems);
+                                  }}
+                                  className="w-full text-left px-4 py-3 hover:bg-gray-100 text-sm border-b"
+                                >
+                                  <div className="font-medium">
+                                    {inv.itemName}
                                   </div>
-                                )}
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const updatedItems = [...items];
+                                  <div className="text-xs text-gray-500">
+                                    SKU: {inv.sku}
+                                  </div>
+                                </button>
+                              ))}
 
-                                  updatedItems[idx].showNewItemForm =
-                                    true;
+                              {getFilteredInventory(item.searchTerm).length === 0 && (
+                                <div className="px-4 py-3 text-sm text-gray-500">
+                                  No inventory item found
+                                </div>
+                              )}
 
-                                  updatedItems[idx].showDropdown =
-                                    false;
+                              <div className="border-t p-3">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const updatedItems = [...items];
 
-                                  updatedItems[idx].newItemName =
-                                    item.searchTerm;
+                                    updatedItems[idx].showNewItemForm = true;
+                                    updatedItems[idx].showDropdown = false;
+                                    updatedItems[idx].newItemName = item.searchTerm;
 
-                                  updatedItems[idx].newItemSku =
-                                    "";
+                                    setItems(updatedItems);
+                                  }}
+                                  className="text-blue-600 font-semibold text-sm"
+                                >
+                                  + Request New Item
+                                </button>
+                              </div>
 
-                                  updatedItems[idx].newItemPrice =
-                                    0;
-
-                                  setItems(updatedItems);
-                                }}
-                                className="text-blue-600 font-semibold text-sm"
-                              >
-                                + Request New Item
-                              </button>
                             </div>
 
-                           
+
                           </div>
                         )}
 
@@ -579,8 +601,8 @@ const OrdersSection = () => {
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Order #</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Client</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
-  Deal
-</th>
+                Deal
+              </th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Items</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Total</th>
               <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">Date</th>
@@ -598,8 +620,8 @@ const OrdersSection = () => {
                 <td className="px-8 py-5 font-bold text-gray-950 text-sm">{order.poNumber}</td>
                 <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">{order.clientId?.clientName}</td>
                 <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">
-  {order.dealId?.dealName || "-"}
-</td>
+                  {order.dealId?.dealName || "-"}
+                </td>
                 <td className="px-8 py-5 text-center text-xs text-gray-400 font-medium">{order.items.length} items</td>
                 <td className="px-8 py-5 text-center font-extrabold text-gray-950 text-sm">₹{order.totalAmount}</td>
                 <td className="px-8 py-5 text-right text-xs font-semibold text-gray-400">

@@ -21,23 +21,146 @@ import VendorPurchaseOrderSection
   from "../vendorPurchaseOrders/VendorPurchaseOrderSection";
 import GRNSection
   from "../grn/GRNSection";
+import {
+  useAuth,
+} from "../../context/AuthContext";
+import UsersSection
+  from "../users/UsersSection";
+import RoleGuard
+  from "../auth/RoleGuard";
+  import AuditLogsSection
+  from "../auditLogs/AuditLogsSection";
 const MainLayout = () => {
-  const [activeSection, setActiveSection] = useState('dashboard');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user } =
+    useAuth();
+  const getDefaultSection =
+    () => {
+      switch (
+      user?.role
+      ) {
+        case "SALES":
+          return "leads";
 
+        case "INVENTORY_MANAGER":
+          return "inventory";
+
+        case "PROCUREMENT_MANAGER":
+          return "purchaseRequisitions";
+
+        case "FINANCE":
+          return "invoices";
+
+
+        default:
+          return "dashboard";
+      }
+    };
+  const [
+    activeSection,
+    setActiveSection,
+  ] = useState(
+    getDefaultSection()
+  );
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const allowedSections = {
+    ADMIN: [
+      "dashboard",
+      "users",
+      "leads",
+      "clients",
+      "deals",
+      "orders",
+      "inventory",
+      "purchaseRequisitions",
+      "vendors",
+      "vendorPurchaseOrders",
+      "grn",
+      "invoices",
+      "payments",
+      "reports",
+      "auditLogs",
+      "settings",
+    ],
+
+    SALES: [
+      "dashboard",
+      "leads",
+      "clients",
+      "deals",
+      "orders",
+    ],
+
+    INVENTORY_MANAGER: [
+      "dashboard",
+      "inventory",
+      "orders",
+    ],
+
+    PROCUREMENT_MANAGER: [
+      "dashboard",
+      "purchaseRequisitions",
+      "vendors",
+      "vendorPurchaseOrders",
+      "grn",
+    ],
+
+    FINANCE: [
+      "dashboard",
+      "invoices",
+      "payments",
+      "reports",
+    ],
+  };
   // Router logic to swap sections
   const renderSection = () => {
+    if (
+      !allowedSections[
+        user?.role
+      ]?.includes(
+        activeSection
+      )
+    ) {
+      return (
+        <DashboardOverview
+          onOpenModal={() =>
+            setIsModalOpen(true)
+          }
+        />
+      );
+    }
     switch (activeSection) {
       case 'dashboard':
         return <DashboardOverview onOpenModal={() => setIsModalOpen(true)} />;
-      case 'leads':
-        return <LeadsSection onOpenModal={() => setIsModalOpen(true)} />;
+      case "leads":
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+              "SALES",
+            ]}
+          >
+            <LeadsSection
+              onOpenModal={() =>
+                setIsModalOpen(true)
+              }
+            />
+          </RoleGuard>
+        );
       case 'deals':
         return <DealsSection onOpenModal={() => setIsModalOpen(true)} />;
       case 'orders':
         return <OrdersSection />;
-      case 'inventory':
-        return <InventorySection />;
+      case "inventory":
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+              "INVENTORY_MANAGER",
+            ]}
+          >
+            <InventorySection />
+          </RoleGuard>
+        );
       case 'settings':
         return <SettingsSection />;
       case "clients":
@@ -45,11 +168,29 @@ const MainLayout = () => {
       case "invoices":
         return <InvoiceSection />;
       case "payments":
-        return <PaymentSection />;
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+              "FINANCE",
+            ]}
+          >
+            <PaymentSection />
+          </RoleGuard>
+        );
       case "reports":
         return <ReportsSection />;
       case "purchaseRequisitions":
-        return <PurchaseRequisitionSection />;
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+              "PROCUREMENT_MANAGER",
+            ]}
+          >
+            <PurchaseRequisitionSection />
+          </RoleGuard>
+        );
       case "vendors":
         return <VendorSection />;
       case "vendorPurchaseOrders":
@@ -58,6 +199,26 @@ const MainLayout = () => {
         );
       case "grn":
         return <GRNSection />;
+      case "users":
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+            ]}
+          >
+            <UsersSection />
+          </RoleGuard>
+        );
+        case "auditLogs":
+  return (
+    <RoleGuard
+      allowedRoles={[
+        "ADMIN",
+      ]}
+    >
+      <AuditLogsSection />
+    </RoleGuard>
+  );
       default:
         return <DashboardOverview onOpenModal={() => setIsModalOpen(true)} />;
     }

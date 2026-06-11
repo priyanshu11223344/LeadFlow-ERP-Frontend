@@ -7,11 +7,13 @@ import {
   X,
   Plus,
 } from 'lucide-react';
-
+import { useAuth }
+  from "../../context/AuthContext";
 import { useCreateLead } from '../../features/leads/leadHooks';
 
 const LeadModal = ({ onClose }) => {
-
+  const { user } =
+  useAuth();
   const { mutate, isPending } = useCreateLead();
 
   const [formData, setFormData] = useState({
@@ -21,7 +23,7 @@ const LeadModal = ({ onClose }) => {
 
     leadStage: "New",
     leadSource: "",
-    leadOwner: "panchalpriyanshu124@gmail.com",
+    leadOwner: user?.email || "",
 
     createDeal: true,
     autoConvertToClient: true,

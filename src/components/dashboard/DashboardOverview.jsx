@@ -4,6 +4,7 @@ import { useGetLeads } from "../../features/leads/leadHooks";
 import { useGetDeals } from "../../features/deals/dealHooks";
 import { useGetOrders } from "../../features/orders/orderHooks";
 import { useGetInventory } from "../../features/inventory/inventoryHooks";
+
 const DashboardOverview = ({ onOpenModal }) => {
   const { data: leadsData } = useGetLeads();
   const { data: dealsData } = useGetDeals();
@@ -76,13 +77,13 @@ const DashboardOverview = ({ onOpenModal }) => {
           <h2 className="text-3xl font-extrabold text-gray-950 tracking-tighter">Overview</h2>
           <p className="text-gray-500 text-sm font-medium">Manage your business growth effectively.</p>
         </div>
-        <button
+        {/* <button
           onClick={onOpenModal}
           className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2.5 hover:bg-gray-800 transition-all shadow-md group"
         >
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform stroke-white stroke-[2px]" />
           New Lead
-        </button>
+        </button> */}
       </div>
 
       {/* Stats Grid & Separated "Won Deals" */}

@@ -116,6 +116,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "clients",
       "deals",
       "orders",
+      "invoices",
     ],
   
     INVENTORY_MANAGER: [

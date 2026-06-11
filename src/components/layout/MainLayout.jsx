@@ -88,6 +88,7 @@ const MainLayout = () => {
       "clients",
       "deals",
       "orders",
+      "invoices",
     ],
 
     INVENTORY_MANAGER: [

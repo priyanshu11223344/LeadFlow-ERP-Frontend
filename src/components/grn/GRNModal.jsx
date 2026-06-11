@@ -27,7 +27,14 @@ import React, {
   
     const pos =
       poData?.data || [];
-  
+      console.log(
+        "PO STATUS",
+        pos.map(po => ({
+          poNumber: po.poNumber,
+          status: po.status
+        }))
+      );
+      console.log("ALL POS", pos);
     const [
       vendorPurchaseOrderId,
       setVendorPurchaseOrderId,
@@ -145,19 +152,25 @@ import React, {
                 Select Vendor PO
               </option>
   
-              {pos.map((po) => (
-                <option
-                  key={po._id}
-                  value={po._id}
-                >
-                  {po.poNumber}
-                  {" - "}
-                  {
-                    po.vendorId
-                      ?.vendorName
-                  }
-                </option>
-              ))}
+              {pos
+  .filter(
+    (po) =>
+      po.status !==
+      "RECEIVED"
+  )
+  .map((po) => (
+    <option
+      key={po._id}
+      value={po._id}
+    >
+      {po.poNumber}
+      {" - "}
+      {
+        po.vendorId
+          ?.vendorName
+      }
+    </option>
+))}
             </select>
   
             <div className="space-y-3">

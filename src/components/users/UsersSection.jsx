@@ -9,7 +9,7 @@ import {
     Power,
 } from "lucide-react";
 
-import UserModal from "./userModal";
+import UserModal from "./UserModal"
 
 import {
     useGetUsers,

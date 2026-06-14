@@ -10,11 +10,11 @@ import {
 import { useAuth }
   from "../../context/AuthContext";
 import { useCreateLead } from '../../features/leads/leadHooks';
-
 const LeadModal = ({ onClose }) => {
   const { user } =
   useAuth();
   const { mutate, isPending } = useCreateLead();
+  
 
   const [formData, setFormData] = useState({
     salutation: "Mr.",
@@ -35,6 +35,7 @@ const LeadModal = ({ onClose }) => {
     closeDate: "",
 
     companyName: "",
+    gstNumber: "",
     address: "",
   });
 
@@ -72,7 +73,15 @@ const LeadModal = ({ onClose }) => {
       alert("Remark is required");
       return;
     }
-
+    if (
+      formData.gstNumber &&
+      formData.gstNumber.length !== 15
+    ) {
+      alert(
+        "GST Number must be 15 characters"
+      );
+      return;
+    }
     mutate(formData, {
 
       onSuccess: () => {
@@ -223,18 +232,7 @@ const LeadModal = ({ onClose }) => {
               <div className="flex items-center gap-5 mt-7">
 
                 {/* CREATE DEAL */}
-                <label className="flex items-center gap-2.5 text-xs font-semibold text-gray-900 cursor-pointer">
-
-                  <input
-                    type="checkbox"
-                    name="createDeal"
-                    checked={formData.createDeal}
-                    onChange={handleChange}
-                    className="w-4 h-4 accent-purple-600 rounded"
-                  />
-
-                  Create Deal
-                </label>
+                
 
                 {/* AUTO CONVERT */}
                 <label className="flex items-center gap-2.5 text-xs font-semibold text-gray-900 cursor-pointer">
@@ -277,62 +275,7 @@ const LeadModal = ({ onClose }) => {
           </section>
 
           {/* DEAL SECTION */}
-          {formData.createDeal && (
-
-            <section className="bg-gray-50 p-7 rounded-2xl border border-gray-100 transition-all">
-
-              <SectionHeader
-                icon={FileText}
-                title="ASSOCIATED DEAL"
-              />
-
-              <div className="space-y-6">
-
-                {/* DEAL NAME */}
-                <div>
-                  <label className={labelClass}>Deal Name</label>
-
-                  <input
-                    type="text"
-                    name="dealName"
-                    value={formData.dealName}
-                    onChange={handleChange}
-                    className={`${inputClass} border border-white`}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-6">
-
-                  {/* AMOUNT */}
-                  <div>
-                    <label className={labelClass}>Amount</label>
-
-                    <input
-                      type="number"
-                      name="amount"
-                      value={formData.amount}
-                      onChange={handleChange}
-                      className={`${inputClass} border border-white`}
-                    />
-                  </div>
-
-                  {/* CLOSE DATE */}
-                  <div>
-                    <label className={labelClass}>Close Date</label>
-
-                    <input
-                      type="date"
-                      name="closeDate"
-                      value={formData.closeDate}
-                      onChange={handleChange}
-                      className={`${inputClass} border border-white`}
-                    />
-                  </div>
-
-                </div>
-              </div>
-            </section>
-          )}
+        
 
           {/* COMPANY DETAILS */}
           <section>
@@ -356,7 +299,27 @@ const LeadModal = ({ onClose }) => {
                   className={inputClass}
                 />
               </div>
+              {/* GST NUMBER */}
+<div>
+  <label className={labelClass}>
+    GST Number
+  </label>
 
+  <input
+    type="text"
+    name="gstNumber"
+    value={formData.gstNumber}
+    onChange={(e) =>
+      setFormData((prev) => ({
+        ...prev,
+        gstNumber:
+          e.target.value.toUpperCase(),
+      }))
+    }
+    placeholder="24ABCDE1234F1Z5"
+    className={inputClass}
+  />
+</div>
               {/* ADDRESS */}
               <div>
                 <label className={labelClass}>Address</label>
@@ -400,7 +363,12 @@ const LeadModal = ({ onClose }) => {
 
         </div>
       </div>
+      {
+ 
+  
+}
     </div>
+    
   );
 };
 

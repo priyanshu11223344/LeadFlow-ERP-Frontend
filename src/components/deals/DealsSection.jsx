@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {
-  Plus, SoapDispenserDroplet,
+  Plus, ShoppingCart,
 } from 'lucide-react';
 
 import { useGetDeals } from '../../features/deals/dealHooks';
@@ -37,7 +37,7 @@ const DealsSection = ({ onOpenModal }) => {
       "en-US",
       {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
       }
     );
   };
@@ -138,6 +138,9 @@ const DealsSection = ({ onOpenModal }) => {
               <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">
                 Close Date
               </th>
+              <th className="px-6 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+  Actions
+</th>
             </tr>
           </thead>
 
@@ -194,6 +197,16 @@ const DealsSection = ({ onOpenModal }) => {
 
                     {formatDate(deal.closeDate)}
                   </td>
+                  <td className="px-6 py-5 text-center">
+
+  {/* <button
+    className="inline-flex items-center gap-2 px-3 py-2 bg-black text-white rounded-lg text-xs font-semibold hover:bg-gray-800 transition-all"
+  >
+    <ShoppingCart className="w-4 h-4" />
+    Create Order
+  </button> */}
+
+</td>
                 </tr>
               ))
 
@@ -202,7 +215,7 @@ const DealsSection = ({ onOpenModal }) => {
               <tr>
 
                 <td
-                  colSpan="6"
+                  colSpan="7"
                   className="text-center py-10 text-gray-400 font-medium"
                 >
                   No deals found

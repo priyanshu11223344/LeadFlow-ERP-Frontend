@@ -1,7 +1,7 @@
 import React from 'react';
 import { LayoutDashboard, Users, Briefcase, Clock, Package, Settings, LogOut, TrendingUp,Receipt } from 'lucide-react';
 import {
-  Building2,CreditCard,BarChart3,ShoppingCart,Truck,ShoppingBag,ClipboardCheck,ShieldCheck,ClipboardList
+  Building2,CreditCard,BarChart3,ShoppingCart,Truck,ShoppingBag,ClipboardCheck,ShieldCheck,ClipboardList,FileText
 } from "lucide-react";
 import { useAuth }
   from "../../context/AuthContext";
@@ -23,6 +23,11 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       id: "leads",
       label: "Leads",
       icon: Users,
+    },
+    {
+      id: "quotations",
+      label: "Quotations",
+      icon: FileText,
     },
     {
       id: "clients",
@@ -108,6 +113,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "reports",
       "auditLogs",
       "settings",
+      "quotations"
     ],
   
     SALES: [
@@ -117,6 +123,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "deals",
       "orders",
       "invoices",
+      "quotations"
     ],
   
     INVENTORY_MANAGER: [

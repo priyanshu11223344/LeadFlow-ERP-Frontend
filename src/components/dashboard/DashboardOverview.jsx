@@ -48,7 +48,7 @@ const DashboardOverview = ({ onOpenModal }) => {
     },
     {
       title: "Total Pipeline",
-      value: `$${totalPipeline.toLocaleString()}`,
+      value: `₹${totalPipeline.toLocaleString()}`,
       icon: DollarSign,
       color: "text-green-600",
       bg: "bg-green-50",
@@ -223,7 +223,7 @@ const DashboardOverview = ({ onOpenModal }) => {
                   </div>
 
                   <p className="text-lg font-bold text-gray-950 tracking-tight">
-                    $
+                  ₹
                     {Number(
                       deal.amount || 0
                     ).toLocaleString()}

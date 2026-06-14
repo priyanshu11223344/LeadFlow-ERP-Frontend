@@ -15,6 +15,9 @@ import {
 import {
   useGetDealsByLead,
 } from "../../features/deals/dealHooks";
+import {
+  useGetQuotations,
+} from "../../features/quotations/quotationHooks";
 // --- NEW ORDER MODAL COMPONENT ---
 const NewOrderModal = ({ isOpen, onClose }) => {
 
@@ -24,6 +27,10 @@ const NewOrderModal = ({ isOpen, onClose }) => {
   const [selectedDeal,
     setSelectedDeal] =
     useState("");
+    const [
+      selectedQuotation,
+      setSelectedQuotation,
+    ] = useState("");
   const {
     data: clientsData,
   } = useGetClients();
@@ -41,6 +48,16 @@ const NewOrderModal = ({ isOpen, onClose }) => {
   } = useGetDealsByLead(
     selectedClientData?.leadId
   );
+  
+  const {
+    data: quotationsData,
+  } = useGetQuotations();
+  const quotations =
+  quotationsData?.data?.filter(
+    (quotation) =>
+      quotation.dealId?._id ===
+      selectedDeal
+  ) || [];
   const {
     data: inventoryData,
   } = useGetInventory();
@@ -48,6 +65,7 @@ const NewOrderModal = ({ isOpen, onClose }) => {
     useCreateOrder();
   const inventory =
     inventoryData?.data || [];
+    console.log("INVENTORY:", inventory);
   const getFilteredInventory = (
     searchTerm
   ) => {
@@ -123,7 +141,12 @@ const NewOrderModal = ({ isOpen, onClose }) => {
           alert("Please select a client");
           return;
         }
-
+        if (!selectedQuotation) {
+          alert(
+            "Please select quotation"
+          );
+          return;
+        }
         const invalidItem = items.find(
           (item) => !item.name
         );
@@ -140,6 +163,8 @@ const NewOrderModal = ({ isOpen, onClose }) => {
               selectedClient,
             dealId:
               selectedDeal,
+            quotationId:
+              selectedQuotation,
             poNumber,
             items: items.map(
               (item) => ({
@@ -255,7 +280,38 @@ const NewOrderModal = ({ isOpen, onClose }) => {
                 )}
               </select>
             </div>
+            <div className="space-y-2">
+  <label className="text-xs font-bold text-gray-700 tracking-wide">
+    Select Quotation
+  </label>
 
+  <select
+    value={selectedQuotation}
+    onChange={(e) =>
+      setSelectedQuotation(
+        e.target.value
+      )
+    }
+    className="w-full px-4 py-3 rounded-xl border border-gray-200"
+  >
+    <option value="">
+      Select Quotation
+    </option>
+
+    {quotations.map(
+      (quotation) => (
+        <option
+          key={quotation._id}
+          value={quotation._id}
+        >
+          {quotation.quotationNumber}
+          {" - ₹"}
+          {quotation.grandTotal}
+        </option>
+      )
+    )}
+  </select>
+</div>
             <div className="space-y-2">
               <label className="text-xs font-bold text-gray-700 tracking-wide">P.O. Number</label>
               <input
@@ -311,7 +367,17 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 
                             updatedItems[idx].showDropdown =
                               true;
-
+                              console.log(
+                                "SEARCH TERM:",
+                                e.target.value
+                              );
+                            
+                              console.log(
+                                "FILTERED:",
+                                getFilteredInventory(
+                                  e.target.value
+                                )
+                              );
                             setItems(updatedItems);
                           }}
                           className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm"
@@ -623,7 +689,7 @@ const OrdersSection = () => {
                   {order.dealId?.dealName || "-"}
                 </td>
                 <td className="px-8 py-5 text-center text-xs text-gray-400 font-medium">{order.items.length} items</td>
-                <td className="px-8 py-5 text-center font-extrabold text-gray-950 text-sm">₹{order.totalAmount}</td>
+                <td className="px-8 py-5 text-center font-extrabold text-gray-950 text-sm">₹{order.grandTotal}</td>
                 <td className="px-8 py-5 text-right text-xs font-semibold text-gray-400">
                   {new Date(order.createdAt).toLocaleDateString()}
                 </td>

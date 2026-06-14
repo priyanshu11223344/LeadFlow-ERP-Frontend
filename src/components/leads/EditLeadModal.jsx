@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 
 import { useUpdateLead } from '../../features/leads/leadHooks';
-
+import QuotationModal
+  from "../quotations/QuotationModal";
 const EditLeadModal = ({
   isOpen,
   onClose,
@@ -31,7 +32,12 @@ const EditLeadModal = ({
     address: "",
     remark: "",
   });
-
+  const [isLoading, setIsLoading] =
+  useState(false);
+  const [
+    isQuotationModalOpen,
+    setIsQuotationModalOpen,
+  ] = useState(false);
   // SYNC FORM DATA WHEN LEADDATA CHANGES
   useEffect(() => {
 
@@ -268,11 +274,37 @@ const EditLeadModal = ({
                   onChange={handleChange}
                   className={inputClass}
                 >
-                  <option value="New">New</option>
-                  <option value="Close">Close</option>
-                  <option value="Won">Won</option>
-                  <option value="Lost">Lost</option>
-                  <option value="Dead">Dead</option>
+                  <option value="New">
+                    New
+                  </option>
+
+                  <option value="Contacted">
+                    Contacted
+                  </option>
+
+                  <option value="Qualified">
+                    Qualified
+                  </option>
+
+                  <option value="Proposal">
+                    Proposal
+                  </option>
+
+                  <option value="Negotiation">
+                    Negotiation
+                  </option>
+
+                  <option value="Won">
+                    Won
+                  </option>
+
+                  <option value="Lost">
+                    Lost
+                  </option>
+
+                  <option value="Dead">
+                    Dead
+                  </option>
                 </select>
               </div>
 
@@ -400,7 +432,24 @@ const EditLeadModal = ({
 
         {/* FOOTER */}
         <div className="px-6 py-4 border-t border-gray-100 flex justify-end items-center gap-3 bg-white">
-
+          {[
+            "Qualified",
+            "Proposal",
+            "Negotiation",
+          ].includes(
+            formData.leadStage
+          ) && (
+            <button
+            onClick={() =>
+              setIsQuotationModalOpen(
+                true
+              )
+            }
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-blue-700"
+          >
+            Generate Quotation
+          </button>
+            )}
           <button
             onClick={onClose}
             className="px-5 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors"
@@ -422,8 +471,22 @@ const EditLeadModal = ({
 
         </div>
       </div>
+      {
+  isQuotationModalOpen && (
+    <QuotationModal
+      lead={leadData}
+      onClose={() =>
+        setIsQuotationModalOpen(
+          false
+        )
+      }
+    />
+  )
+}
     </div>
+    
   );
+ 
 };
 
 export default EditLeadModal;

@@ -28,8 +28,10 @@ import UsersSection
   from "../users/UsersSection";
 import RoleGuard
   from "../auth/RoleGuard";
-  import AuditLogsSection
+import AuditLogsSection
   from "../auditLogs/AuditLogsSection";
+import QuotationSection
+  from "../quotations/QuotationSection";
 const MainLayout = () => {
   const { user } =
     useAuth();
@@ -80,6 +82,7 @@ const MainLayout = () => {
       "reports",
       "auditLogs",
       "settings",
+      "quotations",
     ],
 
     SALES: [
@@ -89,6 +92,7 @@ const MainLayout = () => {
       "deals",
       "orders",
       "invoices",
+      "quotations",
     ],
 
     INVENTORY_MANAGER: [
@@ -166,6 +170,17 @@ const MainLayout = () => {
         return <SettingsSection />;
       case "clients":
         return <ClientsSection />;
+        case "quotations":
+  return (
+    <RoleGuard
+      allowedRoles={[
+        "ADMIN",
+        "SALES",
+      ]}
+    >
+      <QuotationSection />
+    </RoleGuard>
+  );
       case "invoices":
         return <InvoiceSection />;
       case "payments":
@@ -210,16 +225,16 @@ const MainLayout = () => {
             <UsersSection />
           </RoleGuard>
         );
-        case "auditLogs":
-  return (
-    <RoleGuard
-      allowedRoles={[
-        "ADMIN",
-      ]}
-    >
-      <AuditLogsSection />
-    </RoleGuard>
-  );
+      case "auditLogs":
+        return (
+          <RoleGuard
+            allowedRoles={[
+              "ADMIN",
+            ]}
+          >
+            <AuditLogsSection />
+          </RoleGuard>
+        );
       default:
         return <DashboardOverview onOpenModal={() => setIsModalOpen(true)} />;
     }

@@ -67,6 +67,16 @@ const MainLayout = () => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(
+    () => localStorage.getItem("leadflow-sidebar-expanded") === "true"
+  );
+  const toggleSidebar = () => {
+    setIsSidebarExpanded((current) => {
+      const next = !current;
+      localStorage.setItem("leadflow-sidebar-expanded", String(next));
+      return next;
+    });
+  };
   const allowedSections = {
     ADMIN: [
       "dashboard",
@@ -257,6 +267,8 @@ const MainLayout = () => {
         setActiveSection={setActiveSection}
         mobileOpen={isMobileNavOpen}
         onMobileClose={() => setIsMobileNavOpen(false)}
+        expanded={isSidebarExpanded}
+        onToggleExpanded={toggleSidebar}
       />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

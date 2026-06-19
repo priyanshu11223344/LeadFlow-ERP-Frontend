@@ -13,6 +13,9 @@ const QuotationModal = ({ lead, onClose }) => {
     const [selectedItems, setSelectedItems] = useState([]);
     const [validityDate, setValidityDate] = useState("");
     const [termsAndConditions, setTermsAndConditions] = useState("");
+    const [recipientEmail, setRecipientEmail] = useState(
+        lead?.email || ""
+    );
     const quotationSummary = useMemo(() => {
         let subTotal = 0;
         let totalDiscount = 0;
@@ -48,6 +51,7 @@ const QuotationModal = ({ lead, onClose }) => {
     }, [selectedItems]);
     const payload = {
         leadId: lead._id,
+        recipientEmail,
         validityDate,
         termsAndConditions,
 
@@ -110,6 +114,9 @@ const QuotationModal = ({ lead, onClose }) => {
             }
 
             if (!validityDate) {
+                return;
+            }
+            if (!recipientEmail.trim()) {
                 return;
             }
             try {
@@ -183,7 +190,7 @@ const QuotationModal = ({ lead, onClose }) => {
                 <div className="p-6 overflow-y-auto space-y-6 custom-scrollbar">
 
                     {/* LEAD INFO */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                                 Lead Name
@@ -203,6 +210,20 @@ const QuotationModal = ({ lead, onClose }) => {
                                 disabled
                                 value={lead?.companyName || ""}
                                 className="w-full border border-slate-200 rounded-lg p-2.5 bg-slate-50 text-slate-600 font-medium shadow-sm cursor-not-allowed"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                                Recipient Email
+                            </label>
+                            <input
+                                type="email"
+                                required
+                                value={recipientEmail}
+                                onChange={(e) => setRecipientEmail(e.target.value)}
+                                className="w-full border border-slate-200 rounded-lg p-2.5 text-slate-700 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
+                                placeholder="customer@example.com"
                             />
                         </div>
                     </div>

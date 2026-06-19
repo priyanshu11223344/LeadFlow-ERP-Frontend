@@ -38,6 +38,30 @@ export const createOrder =
       throw error;
     }
   };
+
+export const updateOrder =
+  async ({
+    id,
+    data,
+  }) => {
+    try {
+      const response =
+        await API.patch(
+          `/orders/${id}`,
+          data
+        );
+
+      return response.data;
+    } catch (error) {
+      console.log(
+        "UPDATE ORDER ERROR:",
+        error
+      );
+
+      throw error;
+    }
+  };
+
   // GET SINGLE ORDER
 export const getOrderById = async (id) => {
   try {

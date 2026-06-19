@@ -88,6 +88,26 @@ export const convertQuotation =
       throw error;
     }
   };
+
+export const sendQuotationMail =
+  async (id) => {
+    try {
+      const response =
+        await API.post(
+          `/quotations/${id}/email`
+        );
+
+      return response.data;
+    } catch (error) {
+      console.log(
+        "SEND QUOTATION EMAIL ERROR:",
+        error
+      );
+
+      throw error;
+    }
+  };
+
   export const downloadQuotationPdf =
   async (id) => {
     const response =

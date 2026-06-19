@@ -29,6 +29,7 @@ const EditLeadModal = ({
     leadOwner: "",
     autoConvertToClient: false,
     companyName: "",
+    gstNumber: "",
     address: "",
     remark: "",
   });
@@ -69,6 +70,9 @@ const EditLeadModal = ({
 
         companyName:
           leadData.companyName || "",
+
+        gstNumber:
+          leadData.gstNumber || "",
 
         address:
           leadData.address || "",
@@ -111,6 +115,16 @@ const EditLeadModal = ({
       !formData.remark.trim()
     ) {
       alert("Remark is required");
+      return;
+    }
+
+    if (
+      formData.gstNumber &&
+      formData.gstNumber.length !== 15
+    ) {
+      alert(
+        "GST Number must be 15 characters"
+      );
       return;
     }
 
@@ -406,6 +420,28 @@ const EditLeadModal = ({
                   onChange={handleChange}
                   className={inputClass}
                   placeholder="abcdef"
+                />
+              </div>
+
+              <div>
+                <label className={labelClass}>
+                  GST Number
+                </label>
+
+                <input
+                  type="text"
+                  name="gstNumber"
+                  maxLength="15"
+                  value={formData.gstNumber}
+                  onChange={(event) =>
+                    setFormData((current) => ({
+                      ...current,
+                      gstNumber:
+                        event.target.value.toUpperCase(),
+                    }))
+                  }
+                  className={inputClass}
+                  placeholder="15-character GSTIN"
                 />
               </div>
 

@@ -289,6 +289,7 @@ const InventorySection = () => {
               <th className="px-6 py-4">Item</th>
               <th className="px-6 py-4 text-center">SKU</th>
               <th className="px-6 py-4 text-center">Stock</th>
+              <th className="px-6 py-4 text-center">To Order</th>
               <th className="px-6 py-4 text-center">Status</th>
               <th className="px-6 py-4 text-center">Price</th>
               <th className="px-6 py-4 text-center">
@@ -310,6 +311,15 @@ const InventorySection = () => {
                     <span className="font-extrabold text-gray-950">{item.quantity}</span>
                     {item.badge && <span className="bg-red-50 text-red-600 px-1.5 py-0.5 rounded text-[9px] font-black italic">LOW</span>}
                   </div>
+                </td>
+                <td className="px-6 py-5 text-center">
+                  {(item.toBeOrderedQuantity || 0) > 0 ? (
+                    <span className="inline-flex rounded-full bg-orange-50 px-2.5 py-1 text-[10px] font-black text-orange-700 border border-orange-100">
+                      {item.toBeOrderedQuantity}
+                    </span>
+                  ) : (
+                    <span className="text-xs font-semibold text-gray-300">0</span>
+                  )}
                 </td>
                 <td className="px-6 py-5 text-center">
                   <span

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, X, Trash2 } from 'lucide-react'; // Added Trash2 icon
+import { Plus, X, Trash2, PackageSearch, Pencil, Truck } from 'lucide-react'; // Added Trash2 icon
 import {
   useGetInventory,
 } from "../../features/inventory/inventoryHooks";
@@ -18,6 +18,14 @@ import {
 import {
   useGetQuotations,
 } from "../../features/quotations/quotationHooks";
+import {
+  useGetPurchaseRequisitions,
+} from "../../features/purchaseRequisition/purchaseRequisitionHooks";
+import EnhancedNewOrderModal from "./NewOrderModal";
+import OrderDispatchesModal from "../dispatch/OrderDispatchesModal";
+import {
+  useGetDispatches,
+} from "../../features/dispatch/dispatchHooks";
 // --- NEW ORDER MODAL COMPONENT ---
 const NewOrderModal = ({ isOpen, onClose }) => {
 
@@ -622,7 +630,13 @@ const NewOrderModal = ({ isOpen, onClose }) => {
 {/* --- MAIN MAIN ORDERS PAGE --- */ }
 const OrdersSection = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [
+    dispatchHistoryOrder,
+    setDispatchHistoryOrder,
+  ] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedShortage, setSelectedShortage] = useState(null);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const handleDispatch = (order) => {
     setSelectedOrder(order);
@@ -633,9 +647,68 @@ const OrdersSection = () => {
     data: ordersData,
     isLoading,
   } = useGetOrders();
+  const {
+    data: dispatchesData,
+  } = useGetDispatches();
+
+  const {
+    data: requisitionsData,
+  } = useGetPurchaseRequisitions();
 
   const orders =
     ordersData?.data || [];
+  const requisitions =
+    requisitionsData?.data || [];
+  const dispatches =
+    dispatchesData?.data || [];
+  const getOrderDispatches =
+    (order) =>
+      dispatches.filter(
+        (dispatch) =>
+          getOrderId(
+            dispatch.orderId
+          ) === order._id
+      );
+
+  const getOrderId = (orderRef) =>
+    typeof orderRef === "object"
+      ? orderRef?._id
+      : orderRef;
+
+  const getShortageItems = (order) =>
+    order.items
+      .map((item) => ({
+        ...item,
+        shortage:
+          item.quantity -
+          item.allocatedQuantity,
+      }))
+      .filter(
+        (item) =>
+          item.shortage > 0
+      );
+
+  const getLinkedRequisitions =
+    (order, item) =>
+      requisitions.filter(
+        (pr) =>
+          getOrderId(pr.orderId) ===
+            order._id &&
+          pr.sku === item.sku
+      );
+
+  const openShortageDetails =
+    (order, item) => {
+      setSelectedShortage({
+        order,
+        item,
+        requisitions:
+          getLinkedRequisitions(
+            order,
+            item
+          ),
+      });
+    };
   if (isLoading) {
     return (
       <div className="p-6">
@@ -661,40 +734,73 @@ const OrdersSection = () => {
       </div>
 
       <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
-        <table className="w-full text-left">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[1080px] table-fixed text-left">
           <thead>
             <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Order #</th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Client</th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+              <th className="w-[135px] px-5 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">Order #</th>
+              <th className="w-[110px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Client</th>
+              <th className="w-[180px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
                 Deal
               </th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Items</th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Total</th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">Date</th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+              <th className="w-[75px] px-3 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Items</th>
+              <th className="w-[160px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+                Shortages
+              </th>
+              <th className="w-[115px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-right">Total</th>
+              <th className="w-[105px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">Date</th>
+              <th className="w-[145px] px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
                 Status
               </th>
-              <th className="px-8 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center">
+              <th className="sticky right-0 z-20 w-[145px] border-l border-gray-100 bg-gray-50 px-4 py-4 text-[10px] font-extrabold text-gray-400 uppercase tracking-widest text-center shadow-[-8px_0_16px_-16px_rgba(15,23,42,0.4)]">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
-            {orders.map((order, i) => (
-              <tr key={i} className="hover:bg-gray-50/50 transition-colors">
-                <td className="px-8 py-5 font-bold text-gray-950 text-sm">{order.poNumber}</td>
-                <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">{order.clientId?.clientName}</td>
-                <td className="px-8 py-5 text-center text-sm font-medium text-gray-600">
+            {orders.map((order, i) => {
+              const shortageItems =
+                getShortageItems(order);
+
+              return (
+              <tr key={i} className="group hover:bg-gray-50/50 transition-colors">
+                <td className="break-words px-5 py-5 font-bold text-gray-950 text-sm">{order.poNumber}</td>
+                <td className="px-4 py-5 text-center text-sm font-medium text-gray-600">{order.clientId?.clientName}</td>
+                <td className="px-4 py-5 text-center text-sm font-medium text-gray-600">
                   {order.dealId?.dealName || "-"}
                 </td>
-                <td className="px-8 py-5 text-center text-xs text-gray-400 font-medium">{order.items.length} items</td>
-                <td className="px-8 py-5 text-center font-extrabold text-gray-950 text-sm">₹{order.grandTotal}</td>
-                <td className="px-8 py-5 text-right text-xs font-semibold text-gray-400">
+                <td className="px-3 py-5 text-center text-xs text-gray-400 font-medium">{order.items.length} items</td>
+                <td className="px-4 py-5">
+                  {shortageItems.length > 0 ? (
+                    <div className="flex flex-col items-center gap-1.5">
+                      {shortageItems.map((item) => (
+                        <button
+                          key={item.sku}
+                          onClick={() =>
+                            openShortageDetails(
+                              order,
+                              item
+                            )
+                          }
+                          className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1 text-[10px] font-bold text-orange-700 hover:border-orange-300 hover:bg-orange-100"
+                        >
+                          <PackageSearch className="h-3 w-3" />
+                          To be ordered: {item.sku} x {item.shortage}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-xs font-semibold text-emerald-600">
+                      Available
+                    </div>
+                  )}
+                </td>
+                <td className="px-4 py-5 text-right font-extrabold text-gray-950 text-sm">₹{order.grandTotal}</td>
+                <td className="px-4 py-5 text-center text-xs font-semibold text-gray-400">
                   {new Date(order.createdAt).toLocaleDateString()}
                 </td>
 
-                <td className="px-8 py-5 text-center">
+                <td className="px-4 py-5 text-center">
                   <span
                     className={`px-2 py-1 rounded text-[10px] font-bold ${order.status === "DELIVERED"
                       ? "bg-green-100 text-green-700"
@@ -713,7 +819,51 @@ const OrdersSection = () => {
                   </span>
                 </td>
 
-                <td className="px-8 py-5 text-center">
+                <td className="sticky right-0 z-10 border-l border-gray-100 bg-white px-4 py-5 text-center shadow-[-8px_0_16px_-16px_rgba(15,23,42,0.4)] group-hover:bg-gray-50">
+                  <div className="flex items-center justify-center gap-2">
+                    {getOrderDispatches(order).length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setDispatchHistoryOrder(
+                            order
+                          )
+                        }
+                        className="rounded-lg border border-blue-100 bg-blue-50 p-2 text-blue-600 hover:bg-blue-100"
+                        title="View dispatch history"
+                        aria-label={`View dispatches for ${order.poNumber}`}
+                      >
+                        <Truck className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (order.canEdit) {
+                          setEditingOrder(
+                            order
+                          );
+                        }
+                      }}
+                      disabled={!order.canEdit}
+                      className={`rounded-lg border p-2 transition-colors ${
+                        order.canEdit
+                          ? "border-gray-200 text-gray-500 hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-600"
+                          : "cursor-not-allowed border-gray-100 bg-gray-50 text-gray-300"
+                      }`}
+                      title={
+                        order.canEdit
+                          ? "Edit order"
+                          : "Editing is locked because dispatch, procurement, or payment has started"
+                      }
+                      aria-label={
+                        order.canEdit
+                          ? `Edit order ${order.poNumber}`
+                          : `Order ${order.poNumber} cannot be edited after fulfillment or payment begins`
+                      }
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
                   <button
                     disabled={
                       order.status === "PENDING" ||
@@ -732,16 +882,39 @@ const OrdersSection = () => {
                   >
                     Dispatch
                   </button>
+                  </div>
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
+        </div>
       </div>
 
-      <NewOrderModal
+      <EnhancedNewOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+      />
+      <OrderDispatchesModal
+        order={dispatchHistoryOrder}
+        dispatches={
+          dispatchHistoryOrder
+            ? getOrderDispatches(
+                dispatchHistoryOrder
+              )
+            : []
+        }
+        onClose={() =>
+          setDispatchHistoryOrder(null)
+        }
+      />
+      <EnhancedNewOrderModal
+        isOpen={!!editingOrder}
+        order={editingOrder}
+        onClose={() =>
+          setEditingOrder(null)
+        }
       />
       <DispatchModal
         isOpen={isDispatchModalOpen}
@@ -750,6 +923,146 @@ const OrdersSection = () => {
         }
         order={selectedOrder}
       />
+      {selectedShortage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+              <div>
+                <h3 className="text-lg font-bold text-gray-950">
+                  To Be Ordered Details
+                </h3>
+                <p className="text-sm text-gray-500">
+                  {selectedShortage.order.poNumber} - {selectedShortage.item.itemName} ({selectedShortage.item.sku})
+                </p>
+              </div>
+              <button
+                onClick={() =>
+                  setSelectedShortage(null)
+                }
+                className="rounded-full p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] space-y-5 overflow-y-auto p-6">
+              <div className="grid grid-cols-3 gap-3">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Required</p>
+                  <p className="mt-1 text-2xl font-black text-gray-950">{selectedShortage.item.quantity}</p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Allocated</p>
+                  <p className="mt-1 text-2xl font-black text-gray-950">{selectedShortage.item.allocatedQuantity}</p>
+                </div>
+                <div className="rounded-xl border border-orange-100 bg-orange-50 p-4">
+                  <p className="text-[10px] font-black uppercase tracking-widest text-orange-500">To Be Ordered</p>
+                  <p className="mt-1 text-2xl font-black text-orange-700">{selectedShortage.item.shortage}</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-gray-950">Purchase Requisitions</h4>
+                {selectedShortage.requisitions.length > 0 ? (
+                  selectedShortage.requisitions.map((pr) => (
+                    <div key={pr._id} className="rounded-xl border border-gray-100 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">{pr.itemName}</p>
+                          <p className="text-xs text-gray-500">Required {pr.requiredQuantity} - Procured {pr.procuredQuantity}</p>
+                        </div>
+                        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-bold text-gray-700">
+                          {pr.status?.replace("_", " ")}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <p className="rounded-xl border border-dashed border-gray-200 p-4 text-sm text-gray-500">
+                    No purchase requisition is attached yet.
+                  </p>
+                )}
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-3">
+                <LinkedDocsList
+                  title="Vendor POs"
+                  empty="No vendor PO linked."
+                  docs={selectedShortage.requisitions.flatMap(
+                    (pr) =>
+                      pr.linkedVendorPOs || []
+                  )}
+                  renderDoc={(po) =>
+                    `${po.poNumber} - ${po.status}`
+                  }
+                />
+                <LinkedDocsList
+                  title="GRNs"
+                  empty="No GRN received."
+                  docs={selectedShortage.requisitions.flatMap(
+                    (pr) =>
+                      pr.linkedGRNs || []
+                  )}
+                  renderDoc={(grn) =>
+                    `${grn.grnNumber} - ${grn.status}`
+                  }
+                />
+                <LinkedDocsList
+                  title="Invoices"
+                  empty="No invoice attached."
+                  docs={selectedShortage.requisitions.flatMap(
+                    (pr) =>
+                      pr.linkedInvoices || []
+                  )}
+                  renderDoc={(invoice) =>
+                    `${invoice.invoiceNumber} - ${invoice.status} - ₹${invoice.amount}`
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const LinkedDocsList = ({
+  title,
+  empty,
+  docs,
+  renderDoc,
+}) => {
+  const uniqueDocs = [
+    ...new Map(
+      docs.map((doc) => [
+        doc._id,
+        doc,
+      ])
+    ).values(),
+  ];
+
+  return (
+    <div className="rounded-xl border border-gray-100 p-4">
+      <h4 className="text-sm font-bold text-gray-950">
+        {title}
+      </h4>
+      <div className="mt-3 space-y-2">
+        {uniqueDocs.length > 0 ? (
+          uniqueDocs.map((doc) => (
+            <div
+              key={doc._id}
+              className="rounded-lg bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700"
+            >
+              {renderDoc(doc)}
+            </div>
+          ))
+        ) : (
+          <p className="text-xs text-gray-400">
+            {empty}
+          </p>
+        )}
+      </div>
     </div>
   );
 };

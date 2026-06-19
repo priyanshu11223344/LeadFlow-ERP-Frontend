@@ -40,3 +40,16 @@ export const createInvoice =
       throw error;
     }
   };
+
+export const downloadInvoicePdf =
+  async (id) => {
+    const response =
+      await API.get(
+        `/invoices/${id}/pdf`,
+        {
+          responseType: "blob",
+        }
+      );
+
+    return response.data;
+  };

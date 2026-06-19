@@ -7,6 +7,7 @@ import {
   import {
     getInvoices,
     createInvoice,
+    downloadInvoicePdf,
   } from "./invoiceAPI";
   
   // GET
@@ -16,6 +17,14 @@ import {
         queryKey: ["invoices"],
   
         queryFn: getInvoices,
+      });
+    };
+
+  export const useDownloadInvoicePdf =
+    () => {
+      return useMutation({
+        mutationFn:
+          downloadInvoicePdf,
       });
     };
   

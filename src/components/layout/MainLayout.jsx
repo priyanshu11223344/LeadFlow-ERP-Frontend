@@ -32,6 +32,8 @@ import AuditLogsSection
   from "../auditLogs/AuditLogsSection";
 import QuotationSection
   from "../quotations/QuotationSection";
+import TicketsSection
+  from "../tickets/TicketsSection";
 const MainLayout = () => {
   const { user } =
     useAuth();
@@ -81,6 +83,7 @@ const MainLayout = () => {
       "payments",
       "reports",
       "auditLogs",
+      "tickets",
       "settings",
       "quotations",
     ],
@@ -93,12 +96,14 @@ const MainLayout = () => {
       "orders",
       "invoices",
       "quotations",
+      "tickets",
     ],
 
     INVENTORY_MANAGER: [
       "dashboard",
       "inventory",
       "orders",
+      "tickets",
     ],
 
     PROCUREMENT_MANAGER: [
@@ -107,6 +112,7 @@ const MainLayout = () => {
       "vendors",
       "vendorPurchaseOrders",
       "grn",
+      "tickets",
     ],
 
     FINANCE: [
@@ -114,6 +120,7 @@ const MainLayout = () => {
       "invoices",
       "payments",
       "reports",
+      "tickets",
     ],
   };
   // Router logic to swap sections
@@ -235,6 +242,8 @@ const MainLayout = () => {
             <AuditLogsSection />
           </RoleGuard>
         );
+      case "tickets":
+        return <TicketsSection />;
       default:
         return <DashboardOverview onOpenModal={() => setIsModalOpen(true)} />;
     }

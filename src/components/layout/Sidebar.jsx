@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Users, Briefcase, Clock, Package, Settings, LogOut, TrendingUp,Receipt } from 'lucide-react';
+import { LayoutDashboard, Users, Briefcase, Clock, Package, Settings, LogOut, TrendingUp,Receipt, LifeBuoy } from 'lucide-react';
 import {
   Building2,CreditCard,BarChart3,ShoppingCart,Truck,ShoppingBag,ClipboardCheck,ShieldCheck,ClipboardList,FileText
 } from "lucide-react";
@@ -90,6 +90,11 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       icon: ClipboardList,
     },
     {
+      id: "tickets",
+      label: "Tickets",
+      icon: LifeBuoy,
+    },
+    {
       id: "settings",
       label: "Settings",
       icon: Settings,
@@ -112,8 +117,9 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "payments",
       "reports",
       "auditLogs",
+      "tickets",
       "settings",
-      "quotations"
+      "quotations",
     ],
   
     SALES: [
@@ -123,13 +129,15 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "deals",
       "orders",
       "invoices",
-      "quotations"
+      "quotations",
+      "tickets",
     ],
   
     INVENTORY_MANAGER: [
       "dashboard",
       "inventory",
       "orders",
+      "tickets",
     ],
   
     PROCUREMENT_MANAGER: [
@@ -138,6 +146,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "vendors",
       "vendorPurchaseOrders",
       "grn",
+      "tickets",
     ],
   
     FINANCE: [
@@ -145,6 +154,7 @@ const Sidebar = ({ activeSection, setActiveSection }) => {
       "invoices",
       "payments",
       "reports",
+      "tickets",
     ],
   };
   const allowedMenus =

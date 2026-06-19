@@ -7,6 +7,7 @@ import {
   import {
     getOrders,
     createOrder,
+    updateOrder,
     getOrderById,
   } from "./orderAPI";
   
@@ -40,6 +41,46 @@ import {
                 "inventory",
               ],
             }
+          );
+
+          queryClient.invalidateQueries(
+            {
+              queryKey: [
+                "purchaseRequisitions",
+              ],
+            }
+          );
+
+          queryClient.invalidateQueries(
+            {
+              queryKey: [
+                "invoices",
+              ],
+            }
+          );
+        },
+      });
+    };
+
+  export const useUpdateOrder =
+    () => {
+      const queryClient =
+        useQueryClient();
+
+      return useMutation({
+        mutationFn:
+          updateOrder,
+
+        onSuccess: () => {
+          [
+            "orders",
+            "inventory",
+            "purchaseRequisitions",
+            "invoices",
+          ].forEach((queryKey) =>
+            queryClient.invalidateQueries({
+              queryKey: [queryKey],
+            })
           );
         },
       });

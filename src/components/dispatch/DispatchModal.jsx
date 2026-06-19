@@ -19,6 +19,16 @@ const DispatchModal = ({
   const [transporter, setTransporter] =
     useState("");
 
+  const [
+    eWayBillNumber,
+    setEWayBillNumber,
+  ] = useState("");
+
+  const [
+    billOfLadingNumber,
+    setBillOfLadingNumber,
+  ] = useState("");
+
   const [dispatchItems, setDispatchItems] =
     useState([]);
 
@@ -85,6 +95,10 @@ const DispatchModal = ({
             trackingNumber,
 
             transporter,
+
+            eWayBillNumber,
+
+            billOfLadingNumber,
 
             items:
               filteredItems,
@@ -159,6 +173,44 @@ const DispatchModal = ({
                     e.target.value
                   )
                 }
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 mt-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 uppercase">
+                E-Way Bill / BL
+              </label>
+
+              <input
+                value={
+                  eWayBillNumber
+                }
+                onChange={(e) =>
+                  setEWayBillNumber(
+                    e.target.value
+                  )
+                }
+                placeholder="E-Way Bill No."
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 mt-2"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-600 uppercase">
+                Bill of Lading
+              </label>
+
+              <input
+                value={
+                  billOfLadingNumber
+                }
+                onChange={(e) =>
+                  setBillOfLadingNumber(
+                    e.target.value
+                  )
+                }
+                placeholder="BL Number"
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 mt-2"
               />
             </div>

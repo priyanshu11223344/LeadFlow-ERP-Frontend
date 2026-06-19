@@ -9,7 +9,8 @@ import {
     createQuotation,
     updateQuotationStatus,
     convertQuotation,
-    downloadQuotationPdf
+    downloadQuotationPdf,
+    sendQuotationMail
   } from "./quotationAPI";
   
   // GET
@@ -107,5 +108,26 @@ import {
       return useMutation({
         mutationFn:
           downloadQuotationPdf,
+      });
+    };
+
+    export const useSendQuotationMail =
+    () => {
+      const queryClient =
+        useQueryClient();
+
+      return useMutation({
+        mutationFn:
+          sendQuotationMail,
+
+        onSuccess: () => {
+          queryClient.invalidateQueries(
+            {
+              queryKey: [
+                "quotations",
+              ],
+            }
+          );
+        },
       });
     };

@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import { Plus, Receipt, FileText, Calendar, DollarSign, AlertCircle } from "lucide-react";
 
 import {
+  useDownloadInvoicePdf,
   useGetInvoices,
 } from "../../features/invoices/invoiceHooks";
 
 import InvoiceModal from "./InvoiceModal";
+import InvoiceViewModal from "./InvoiceViewModal";
 
 const InvoiceSection = () => {
   const [isModalOpen, setIsModalOpen] =
     useState(false);
+  const [selectedInvoice, setSelectedInvoice] =
+    useState(null);
+  const downloadInvoiceMutation =
+    useDownloadInvoicePdf();
 
   const {
     data,
@@ -35,6 +41,36 @@ const InvoiceSection = () => {
 
       default:
         return "bg-slate-50 text-slate-600 border-slate-200";
+    }
+  };
+
+  const handleDownload = async (
+    invoice
+  ) => {
+    try {
+      const blob =
+        await downloadInvoiceMutation.mutateAsync(
+          invoice._id
+        );
+      const url =
+        window.URL.createObjectURL(
+          new Blob([blob])
+        );
+      const link =
+        document.createElement("a");
+
+      link.href = url;
+      link.download =
+        `${invoice.invoiceNumber}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert(
+        error?.response?.data?.message ||
+        "Failed to download invoice"
+      );
     }
   };
 
@@ -123,10 +159,18 @@ const InvoiceSection = () => {
                   >
                     {/* Invoice ID */}
                     <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                      <div className="flex items-center gap-2.5">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSelectedInvoice(
+                            invoice
+                          )
+                        }
+                        className="flex items-center gap-2.5 text-left text-indigo-700 hover:text-indigo-900 hover:underline"
+                      >
                         <FileText className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                         {invoice.invoiceNumber}
-                      </div>
+                      </button>
                     </td>
 
                     {/* Order ID */}
@@ -212,6 +256,16 @@ const InvoiceSection = () => {
         isOpen={isModalOpen}
         onClose={() =>
           setIsModalOpen(false)
+        }
+      />
+      <InvoiceViewModal
+        invoice={selectedInvoice}
+        onClose={() =>
+          setSelectedInvoice(null)
+        }
+        onDownload={handleDownload}
+        isDownloading={
+          downloadInvoiceMutation.isPending
         }
       />
 

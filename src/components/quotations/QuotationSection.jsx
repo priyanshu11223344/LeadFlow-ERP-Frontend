@@ -15,28 +15,44 @@ import {
     User,
     Clock,
     Ban,
+    X,
+    Mail,
     ArrowUpRight, Pencil, GitBranch
 } from "lucide-react";
 import {
     useGetQuotations,
-    useConvertQuotation, useDownloadQuotationPdf
+    useConvertQuotation, useDownloadQuotationPdf,
+    useSendQuotationMail
 } from "../../features/quotations/quotationHooks";
+import { useGetLeads } from "../../features/leads/leadHooks";
 import QuotationViewModal from "./QuotationViewModal";
 import QuotationStatusModal from "./QuotationStatusModal";
-const QuotationSection = ({ onCreateNewClick }) => {
+import QuotationModal from "./QuotationModal";
+const QuotationSection = () => {
     const downloadPdfMutation =
         useDownloadQuotationPdf();
     const convertQuotationMutation =
         useConvertQuotation();
+    const sendMailMutation =
+        useSendQuotationMail();
     const {
         data,
         isLoading,
         isError,
         refetch
     } = useGetQuotations();
+    const {
+        data: leadsData,
+        isLoading: areLeadsLoading,
+        isError: isLeadsError,
+    } = useGetLeads();
 
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
+    const [sendingQuotationId, setSendingQuotationId] = useState(null);
+    const [isLeadPickerOpen, setIsLeadPickerOpen] = useState(false);
+    const [leadSearchTerm, setLeadSearchTerm] = useState("");
+    const [selectedLead, setSelectedLead] = useState(null);
     const [
         isStatusModalOpen,
         setIsStatusModalOpen,
@@ -47,6 +63,26 @@ const QuotationSection = ({ onCreateNewClick }) => {
     const [isViewOpen, setIsViewOpen] =
         useState(false);
     const quotations = data?.data || [];
+    const leads = leadsData?.data || [];
+    const filteredLeads = useMemo(() => {
+        const normalizedSearch = leadSearchTerm.trim().toLowerCase();
+
+        if (!normalizedSearch) {
+            return leads;
+        }
+
+        return leads.filter((lead) =>
+            [lead.name, lead.companyName, lead.email].some((value) =>
+                value?.toLowerCase().includes(normalizedSearch)
+            )
+        );
+    }, [leads, leadSearchTerm]);
+
+    const handleSelectLead = (lead) => {
+        setSelectedLead(lead);
+        setIsLeadPickerOpen(false);
+        setLeadSearchTerm("");
+    };
     const handleConvertQuotation =
         async (quotationId) => {
             try {
@@ -104,6 +140,29 @@ const QuotationSection = ({ onCreateNewClick }) => {
                 );
             } catch (error) {
                 console.log(error);
+            }
+        };
+    const handleSendMail =
+        async (quotation) => {
+            setSendingQuotationId(quotation._id);
+
+            try {
+                const result =
+                    await sendMailMutation.mutateAsync(
+                        quotation._id
+                    );
+
+                alert(
+                    result?.message ||
+                    "Quotation emailed successfully"
+                );
+            } catch (error) {
+                alert(
+                    error?.response?.data?.message ||
+                    "Unable to email quotation"
+                );
+            } finally {
+                setSendingQuotationId(null);
             }
         };
     // KPI Calculations
@@ -266,7 +325,14 @@ const QuotationSection = ({ onCreateNewClick }) => {
                         Draft, track, and manage commercial quotation records for your active leads.
                     </p>
                 </div>
-                
+                <button
+                    type="button"
+                    onClick={() => setIsLeadPickerOpen(true)}
+                    className="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 transition-colors shadow-sm"
+                >
+                    <Plus className="w-4 h-4 stroke-[3px]" />
+                    New Quotation
+                </button>
             </div>
 
             {/* KPI STATISTICS CARDS */}
@@ -486,6 +552,27 @@ const QuotationSection = ({ onCreateNewClick }) => {
                                                     >
                                                         <Download className="w-4 h-4" />
                                                     </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            handleSendMail(
+                                                                quotation
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            sendingQuotationId ===
+                                                            quotation._id
+                                                        }
+                                                        className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all disabled:opacity-40 disabled:cursor-wait"
+                                                        title={`Email quotation to ${
+                                                            quotation.recipientEmail ||
+                                                            quotation.leadId?.email ||
+                                                            "recipient"
+                                                        }`}
+                                                        aria-label={`Email quotation ${quotation.quotationNumber}`}
+                                                    >
+                                                        <Mail className="w-4 h-4" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>
@@ -539,6 +626,87 @@ const QuotationSection = ({ onCreateNewClick }) => {
                     selectedQuotation
                 }
             />
+            {isLeadPickerOpen && (
+                <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden">
+                        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900">
+                                    Select a lead
+                                </h3>
+                                <p className="text-sm text-slate-400 mt-1">
+                                    Choose the customer lead for this quotation.
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setIsLeadPickerOpen(false);
+                                    setLeadSearchTerm("");
+                                }}
+                                className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+                                aria-label="Close lead selection"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4">
+                            <div className="relative">
+                                <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <input
+                                    type="text"
+                                    value={leadSearchTerm}
+                                    onChange={(event) => setLeadSearchTerm(event.target.value)}
+                                    placeholder="Search by lead, company, or email..."
+                                    className="w-full py-2.5 pl-11 pr-4 border border-slate-200 rounded-xl text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                                    autoFocus
+                                />
+                            </div>
+
+                            <div className="max-h-80 overflow-y-auto space-y-2 custom-scrollbar">
+                                {areLeadsLoading ? (
+                                    <p className="py-8 text-center text-sm text-slate-400">
+                                        Loading leads...
+                                    </p>
+                                ) : isLeadsError ? (
+                                    <p className="py-8 text-center text-sm text-rose-500">
+                                        Leads could not be loaded. Please try again.
+                                    </p>
+                                ) : filteredLeads.length > 0 ? (
+                                    filteredLeads.map((lead) => (
+                                        <button
+                                            type="button"
+                                            key={lead._id}
+                                            onClick={() => handleSelectLead(lead)}
+                                            className="w-full text-left p-4 border border-slate-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50/40 transition-colors"
+                                        >
+                                            <div className="font-semibold text-slate-800">
+                                                {lead.name || "Unnamed lead"}
+                                            </div>
+                                            <div className="text-xs text-slate-400 mt-1">
+                                                {[lead.companyName, lead.email]
+                                                    .filter(Boolean)
+                                                    .join(" • ") || "No company or email"}
+                                            </div>
+                                        </button>
+                                    ))
+                                ) : (
+                                    <p className="py-8 text-center text-sm text-slate-400">
+                                        No leads match your search.
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {selectedLead && (
+                <QuotationModal
+                    lead={selectedLead}
+                    onClose={() => setSelectedLead(null)}
+                />
+            )}
 
 
         </div>

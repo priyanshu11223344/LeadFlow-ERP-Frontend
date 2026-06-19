@@ -717,8 +717,8 @@ const OrdersSection = () => {
     );
   }
   return (
-    <div className="max-w-screen-2xl mx-auto space-y-8 p-6">
-      <div className="flex justify-between items-end">
+    <div className="mx-auto max-w-screen-2xl space-y-5 p-0 sm:space-y-8 sm:p-2 lg:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h2 className="text-3xl font-extrabold text-gray-950 tracking-tighter">Orders</h2>
           <p className="text-gray-500 text-sm font-medium">Manage your business growth effectively.</p>
@@ -726,14 +726,14 @@ const OrdersSection = () => {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2.5 hover:bg-gray-800 shadow-md transition-all"
+          className="flex w-full items-center justify-center gap-2.5 rounded-xl bg-black px-6 py-3 font-semibold text-white shadow-md transition-all hover:bg-gray-800 sm:w-auto"
         >
           <Plus className="w-5 h-5 stroke-[2.5px]" />
           New Order
         </button>
       </div>
 
-      <div className="bg-white border border-gray-100 rounded-2xl shadow-sm overflow-hidden">
+      <div className="hidden overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm md:block">
         <div className="overflow-x-auto">
         <table className="w-full min-w-[1080px] table-fixed text-left">
           <thead>
@@ -892,6 +892,149 @@ const OrdersSection = () => {
         </div>
       </div>
 
+      <div className="space-y-3 md:hidden">
+        {orders.map((order) => {
+          const shortageItems =
+            getShortageItems(order);
+          const orderDispatches =
+            getOrderDispatches(order);
+          const dispatchDisabled =
+            order.status === "PENDING" ||
+            order.status === "PENDING_PROCUREMENT" ||
+            order.status === "DELIVERED" ||
+            order.status === "COMPLETED";
+
+          return (
+            <article
+              key={order._id}
+              className="rounded-[22px] border border-gray-100 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-gray-400">
+                    Order
+                  </p>
+                  <h3 className="mt-1 break-words text-base font-extrabold text-gray-950">
+                    {order.poNumber}
+                  </h3>
+                  <p className="mt-1 truncate text-sm font-medium text-gray-600">
+                    {order.clientId?.clientName || "No client"}
+                  </p>
+                </div>
+                <span
+                  className={`max-w-[46%] rounded-full px-2.5 py-1 text-center text-[9px] font-extrabold leading-tight ${
+                    order.status === "DELIVERED"
+                      ? "bg-green-100 text-green-700"
+                      : order.status === "PARTIALLY_DISPATCHED"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : order.status === "ALLOCATED"
+                          ? "bg-blue-100 text-blue-700"
+                          : order.status === "PARTIALLY_ALLOCATED"
+                            ? "bg-orange-100 text-orange-700"
+                            : order.status === "PENDING_PROCUREMENT"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  {order.status?.replaceAll("_", " ")}
+                </span>
+              </div>
+
+              <div className="mt-4 rounded-2xl bg-[#f8f8f7] p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                  Deal
+                </p>
+                <p className="mt-1 text-sm font-semibold text-gray-700">
+                  {order.dealId?.dealName || "—"}
+                </p>
+              </div>
+
+              <div className="mt-3 grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2">
+                <div className="rounded-xl border border-gray-100 p-3">
+                  <p className="text-[9px] font-bold uppercase text-gray-400">Items</p>
+                  <p className="mt-1 text-sm font-extrabold text-gray-900">
+                    {order.items.length}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-100 p-3">
+                  <p className="text-[9px] font-bold uppercase text-gray-400">Total</p>
+                  <p className="mt-1 whitespace-nowrap text-xs font-extrabold text-gray-900">
+                    ₹{Number(order.grandTotal || 0).toLocaleString("en-IN")}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-100 p-3">
+                  <p className="text-[9px] font-bold uppercase text-gray-400">Date</p>
+                  <p className="mt-1 text-xs font-bold text-gray-700">
+                    {new Date(order.createdAt).toLocaleDateString("en-IN")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-3">
+                {shortageItems.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {shortageItems.map((item) => (
+                      <button
+                        key={item.sku}
+                        onClick={() => openShortageDetails(order, item)}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-2.5 py-1.5 text-[10px] font-bold text-orange-700"
+                      >
+                        <PackageSearch className="h-3 w-3" />
+                        {item.sku} × {item.shortage} to order
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs font-bold text-emerald-600">
+                    All items available
+                  </p>
+                )}
+              </div>
+
+              <div className="mt-4 grid grid-cols-[auto_auto_1fr] gap-2 border-t border-gray-100 pt-4">
+                {orderDispatches.length > 0 ? (
+                  <button
+                    type="button"
+                    onClick={() => setDispatchHistoryOrder(order)}
+                    className="flex min-h-11 items-center justify-center rounded-xl border border-blue-100 bg-blue-50 px-3 text-blue-600"
+                    aria-label={`View dispatches for ${order.poNumber}`}
+                  >
+                    <Truck className="h-4 w-4" />
+                  </button>
+                ) : (
+                  <div />
+                )}
+                <button
+                  type="button"
+                  onClick={() => order.canEdit && setEditingOrder(order)}
+                  disabled={!order.canEdit}
+                  className={`flex min-h-11 items-center justify-center rounded-xl border px-3 ${
+                    order.canEdit
+                      ? "border-gray-200 text-gray-600"
+                      : "border-gray-100 bg-gray-50 text-gray-300"
+                  }`}
+                  aria-label={order.canEdit ? `Edit order ${order.poNumber}` : `Order ${order.poNumber} cannot be edited`}
+                >
+                  <Pencil className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  disabled={dispatchDisabled}
+                  onClick={() => handleDispatch(order)}
+                  className={`min-h-11 rounded-xl px-4 text-sm font-bold ${
+                    dispatchDisabled
+                      ? "bg-gray-100 text-gray-400"
+                      : "bg-black text-white"
+                  }`}
+                >
+                  Dispatch
+                </button>
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
       <EnhancedNewOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -925,8 +1068,8 @@ const OrdersSection = () => {
       />
       {selectedShortage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-gray-100 px-6 py-5">
+          <div className="max-h-[94vh] w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-xl">
+            <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-4 py-4 sm:px-6 sm:py-5">
               <div>
                 <h3 className="text-lg font-bold text-gray-950">
                   To Be Ordered Details
@@ -945,8 +1088,8 @@ const OrdersSection = () => {
               </button>
             </div>
 
-            <div className="max-h-[70vh] space-y-5 overflow-y-auto p-6">
-              <div className="grid grid-cols-3 gap-3">
+            <div className="max-h-[78vh] space-y-5 overflow-y-auto p-4 sm:max-h-[70vh] sm:p-6">
+              <div className="grid grid-cols-1 gap-3 min-[420px]:grid-cols-3">
                 <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Required</p>
                   <p className="mt-1 text-2xl font-black text-gray-950">{selectedShortage.item.quantity}</p>

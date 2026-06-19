@@ -66,6 +66,7 @@ const MainLayout = () => {
     getDefaultSection()
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const allowedSections = {
     ADMIN: [
       "dashboard",
@@ -250,14 +251,24 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB] overflow-hidden font-sans">
-      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+    <div className="leadflow-app flex min-h-screen overflow-hidden font-sans">
+      <Sidebar
+        activeSection={activeSection}
+        setActiveSection={setActiveSection}
+        mobileOpen={isMobileNavOpen}
+        onMobileClose={() => setIsMobileNavOpen(false)}
+      />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <Navbar activeSection={activeSection} />
+        <Navbar
+          activeSection={activeSection}
+          onMenuClick={() => setIsMobileNavOpen(true)}
+        />
 
-        <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
-          {renderSection()}
+        <main className="leadflow-main flex-1 overflow-y-auto scroll-smooth px-3 pb-3 sm:px-5 sm:pb-5 lg:pr-6">
+          <div className="leadflow-content min-h-full rounded-[26px] bg-[#f0f0f0] p-4 sm:p-6 lg:p-7">
+            {renderSection()}
+          </div>
         </main>
       </div>
 

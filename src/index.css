@@ -1,1 +1,212 @@
 @import "tailwindcss";
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #202020;
+  background: #f8f8f7;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  background: #f8f8f7;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(217, 208, 255, 0.22), transparent 28rem),
+    #f8f8f7;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  color: #202020;
+  background: #d9d0ff;
+}
+
+.leadflow-app {
+  background: #f8f8f7;
+}
+
+.leadflow-sidebar {
+  background: #f8f8f7;
+}
+
+.leadflow-nav {
+  scrollbar-width: none;
+}
+
+.leadflow-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.leadflow-navbar {
+  background: #f8f8f7;
+}
+
+.leadflow-content {
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.025);
+}
+
+.leadflow-content > div {
+  width: 100%;
+  max-width: none;
+}
+
+.leadflow-content :is(.bg-white) {
+  border-color: rgba(15, 23, 42, 0.055);
+}
+
+.leadflow-content :is(.shadow-sm) {
+  box-shadow: 0 12px 35px -28px rgba(15, 23, 42, 0.4);
+}
+
+.leadflow-content table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.leadflow-content thead {
+  background: #f8f8f7;
+}
+
+.leadflow-content tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.leadflow-content input:not([type="checkbox"]):not([type="radio"]),
+.leadflow-content select,
+.leadflow-content textarea {
+  min-height: 42px;
+  border-color: rgba(15, 23, 42, 0.09);
+  background-color: #fbfbfa;
+}
+
+.leadflow-content input:focus,
+.leadflow-content select:focus,
+.leadflow-content textarea:focus {
+  border-color: #a996ef;
+  box-shadow: 0 0 0 4px rgba(169, 150, 239, 0.12);
+  outline: none;
+}
+
+.lf-panel {
+  border: 1px solid rgba(15, 23, 42, 0.055);
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 16px 40px -34px rgba(15, 23, 42, 0.45);
+}
+
+.lf-soft-panel {
+  border: 1px solid rgba(15, 23, 42, 0.045);
+  border-radius: 20px;
+  background: #f8f8f7;
+}
+
+.lf-lavender {
+  background:
+    radial-gradient(circle at 88% 10%, rgba(255, 255, 255, 0.85), transparent 20%),
+    linear-gradient(120deg, #ded7ff 0%, #d0c5fb 55%, #f3d7f2 100%);
+}
+
+.lf-orb {
+  position: absolute;
+  width: 210px;
+  height: 210px;
+  border: 30px solid rgba(255, 255, 255, 0.42);
+  border-radius: 42% 58% 58% 42%;
+  filter: drop-shadow(0 22px 25px rgba(113, 78, 180, 0.16));
+  transform: rotate(35deg);
+}
+
+.lf-orb::before,
+.lf-orb::after {
+  position: absolute;
+  inset: 18px;
+  content: "";
+  border: 22px solid rgba(176, 143, 221, 0.22);
+  border-radius: 58% 42% 45% 55%;
+}
+
+.lf-orb::after {
+  inset: 56px;
+  border-width: 16px;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 1023px) {
+  .leadflow-main {
+    padding-left: 0.75rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .leadflow-content {
+    border-radius: 22px;
+    padding: 1rem;
+  }
+
+  .leadflow-content :is(h2.text-3xl, h2.text-2xl) {
+    font-size: 1.5rem;
+    line-height: 1.9rem;
+  }
+
+  .leadflow-content :is(.p-8, .px-8) {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .leadflow-content :is(.py-8) {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .leadflow-content table {
+    min-width: 760px;
+  }
+
+  .leadflow-content :is(.grid-cols-2, .grid-cols-3, .grid-cols-4) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .leadflow-content :is(.col-span-2, .col-span-3, .col-span-4) {
+    grid-column: auto;
+  }
+
+  .leadflow-content .fixed > div {
+    max-height: 94vh;
+  }
+}
+
+@media (max-width: 480px) {
+  .leadflow-navbar {
+    min-height: 64px;
+    padding-inline: 0.75rem;
+  }
+
+  .leadflow-content {
+    padding: 0.8rem;
+  }
+}

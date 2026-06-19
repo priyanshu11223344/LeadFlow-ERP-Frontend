@@ -1,50 +1,82 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+import React from "react";
+import {
+  Bell,
+  Menu,
+  Search,
+} from "lucide-react";
+
 import {
   useAuth,
 } from "../../context/AuthContext";
-const Navbar = ({ activeSection }) => {
-  const { user } =
-    useAuth();
+
+const sectionTitles = {
+  purchaseRequisitions: "Purchase Requisitions",
+  vendorPurchaseOrders: "Vendor Purchase Orders",
+  auditLogs: "Audit Logs",
+  grn: "Goods Received",
+};
+
+const Navbar = ({
+  activeSection,
+  onMenuClick,
+}) => {
+  const { user } = useAuth();
+  const title =
+    sectionTitles[activeSection] ||
+    activeSection?.replace(/([A-Z])/g, " $1") ||
+    "Dashboard";
+
   return (
-    <header className="h-14 bg-white border-b border-gray-100 flex items-center justify-between px-8">
-      {/* 1. Dynamic Section Name */}
-      <h1 className="text-sm font-bold text-gray-950 capitalize tracking-tight">
-        {activeSection}
-      </h1>
-
-      {/* 2. Right Side: Search and Profile */}
-      <div className="flex items-center gap-4">
-        {/* Search Bar Container */}
-        <div className="relative group">
-          <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <Search className="w-4 h-4 text-gray-400 group-focus-within:text-black transition-colors" />
-          </div>
-          <input
-            type="text"
-            placeholder="Search..."
-            className="bg-gray-50 border border-transparent focus:border-gray-200 focus:bg-white rounded-full py-1.5 pl-10 pr-4 text-xs font-medium focus:outline-none w-48 lg:w-64 transition-all"
-          />
+    <header className="leadflow-navbar flex min-h-[72px] items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white text-slate-700 shadow-sm lg:hidden"
+          aria-label="Open navigation"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+            Workspace
+          </p>
+          <h1 className="truncate text-xl font-bold capitalize tracking-tight text-[#202020]">
+            {title}
+          </h1>
         </div>
+      </div>
 
-        {/* Dummy User Avatar (Matched to 'p' circle in screenshot) */}
-        <div className="flex items-center justify-center">
-          <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        <label className="relative hidden md:block">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="search"
+            placeholder="Search workspace"
+            className="h-11 w-52 rounded-2xl border-0 bg-white pl-11 pr-4 text-sm outline-none ring-1 ring-black/[0.04] transition-all focus:w-64 focus:ring-[#b7a8f8] xl:w-72"
+          />
+        </label>
 
-            <div className="text-right">
-              <p className="text-xs font-bold text-gray-900">
-                {user?.name}
-              </p>
+        <button
+          type="button"
+          className="relative flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-slate-600 ring-1 ring-black/[0.04]"
+          aria-label="Notifications"
+        >
+          <Bell className="h-4.5 w-4.5" />
+          <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-[#9d87ef] ring-2 ring-white" />
+        </button>
 
-              <p className="text-[10px] text-gray-500">
-                {user?.role}
-              </p>
-            </div>
-
-            <div className="w-8 h-8 bg-slate-500 rounded-full flex items-center justify-center text-white text-[11px] font-bold uppercase shadow-sm">
-              {user?.name?.charAt(0)}
-            </div>
-
+        <div className="flex items-center gap-3 rounded-2xl bg-white p-1.5 pr-3 ring-1 ring-black/[0.04]">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#202020] text-xs font-bold uppercase text-white">
+            {user?.name?.charAt(0) || "U"}
+          </div>
+          <div className="hidden text-left sm:block">
+            <p className="max-w-28 truncate text-xs font-bold text-slate-900">
+              {user?.name}
+            </p>
+            <p className="text-[9px] font-semibold uppercase tracking-wider text-slate-400">
+              {user?.role?.replaceAll("_", " ")}
+            </p>
           </div>
         </div>
       </div>

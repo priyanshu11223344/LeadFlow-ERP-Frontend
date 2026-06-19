@@ -525,11 +525,11 @@ const NewOrderModal = ({
     )}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-      <div className="flex max-h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-gray-100 px-8 py-5">
-          <div>
-            <h3 className="text-xl font-bold text-gray-950">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
+      <div className="flex max-h-[96vh] w-full max-w-6xl flex-col overflow-hidden rounded-t-[26px] bg-white shadow-xl sm:max-h-[92vh] sm:rounded-2xl">
+        <div className="flex items-start justify-between gap-3 border-b border-gray-100 px-4 py-4 sm:px-8 sm:py-5">
+          <div className="min-w-0">
+            <h3 className="break-words text-lg font-bold text-gray-950 sm:text-xl">
               {isEditing
                 ? `Edit Order ${poNumber}`
                 : "New Purchase Order"}
@@ -550,7 +550,7 @@ const NewOrderModal = ({
           </button>
         </div>
 
-        <div className="space-y-7 overflow-y-auto p-8">
+        <div className="space-y-6 overflow-y-auto p-4 sm:space-y-7 sm:p-8">
           <div className="grid grid-cols-1 gap-5 md:grid-cols-4">
             <label className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wide text-gray-600">
@@ -647,7 +647,7 @@ const NewOrderModal = ({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-center min-[420px]:justify-between">
               <div>
                 <h4 className="font-bold text-gray-950">
                   Order Items
@@ -665,14 +665,14 @@ const NewOrderModal = ({
                   ])
                 }
                 disabled={!selectedQuotation}
-                className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
+                className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-black px-4 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Plus className="h-4 w-4" />
                 Add Item
               </button>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-gray-200">
+            <div className="hidden overflow-x-auto rounded-2xl border border-gray-200 md:block">
               <table className="w-full min-w-[950px] text-left">
                 <thead className="bg-gray-50 text-[10px] font-bold uppercase tracking-wider text-gray-500">
                   <tr>
@@ -883,10 +883,114 @@ const NewOrderModal = ({
                 </tbody>
               </table>
             </div>
+
+            <div className="space-y-3 md:hidden">
+              {items.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 px-5 py-10 text-center text-sm text-gray-400">
+                  Select a quotation to load its items.
+                </div>
+              ) : (
+                items.map((item, index) => {
+                  const gross =
+                    Number(item.quantity) *
+                    Number(item.price);
+                  const net =
+                    gross -
+                    gross *
+                    Number(item.discountPercent) /
+                    100;
+
+                  return (
+                    <div
+                      key={`mobile-${item.source}-${item.sku}-${index}`}
+                      className="rounded-2xl border border-gray-200 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          {item.source === "ADDED" ? (
+                            <select
+                              value={item.inventoryId}
+                              onChange={(event) =>
+                                selectInventoryItem(index, event.target.value)
+                              }
+                              className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm"
+                            >
+                              <option value="">Select inventory item</option>
+                              {inventory.map((inventoryItem) => (
+                                <option key={inventoryItem._id} value={inventoryItem._id}>
+                                  {inventoryItem.itemName}
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <>
+                              <p className="font-bold text-gray-900">{item.itemName}</p>
+                              <p className="mt-1 text-xs font-medium text-gray-500">
+                                {item.sku || "No SKU"} · {item.source === "ORDER" ? "Existing item" : "From quotation"}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setItems((current) =>
+                              current.filter((_, itemIndex) => itemIndex !== index)
+                            )
+                          }
+                          className="rounded-lg bg-red-50 p-2 text-red-500"
+                          aria-label={`Remove ${item.itemName || "item"}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2">
+                        <label className="space-y-1">
+                          <span className="text-[9px] font-bold uppercase text-gray-400">Qty</span>
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            onChange={(event) => updateItem(index, "quantity", event.target.value)}
+                            className="w-full rounded-lg border border-gray-200 px-2 py-2 text-center"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[9px] font-bold uppercase text-gray-400">Price</span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={item.price}
+                            onChange={(event) => updateItem(index, "price", event.target.value)}
+                            className="w-full rounded-lg border border-gray-200 px-2 py-2 text-right"
+                          />
+                        </label>
+                        <label className="space-y-1">
+                          <span className="text-[9px] font-bold uppercase text-gray-400">Disc. %</span>
+                          <input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={item.discountPercent}
+                            onChange={(event) => updateItem(index, "discountPercent", event.target.value)}
+                            className="w-full rounded-lg border border-gray-200 px-2 py-2 text-center"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                        <span className="text-xs font-bold uppercase text-gray-400">Net</span>
+                        <span className="font-extrabold text-gray-900">{money(net)}</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="grid grid-cols-2 gap-4 rounded-2xl border border-gray-200 p-5 sm:grid-cols-4">
+            <div className="grid grid-cols-[repeat(2,minmax(0,1fr))] gap-4 rounded-2xl border border-gray-200 p-4 sm:grid-cols-4 sm:p-5">
               {[
                 [
                   "Order Discount %",
@@ -985,15 +1089,15 @@ const NewOrderModal = ({
           </div>
         </div>
 
-        <div className="flex items-center justify-between border-t border-gray-100 px-8 py-5">
-          <p className="text-xs text-gray-500">
+        <div className="flex flex-col gap-3 border-t border-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8 sm:py-5">
+          <p className="hidden text-xs text-gray-500 sm:block">
             Processing creates both the purchase order and its invoice.
           </p>
-          <div className="flex gap-3">
+          <div className="grid w-full grid-cols-[auto_1fr] gap-3 sm:flex sm:w-auto">
             <button
               type="button"
               onClick={resetAndClose}
-              className="px-5 py-2.5 text-sm font-semibold text-gray-600"
+              className="min-h-11 px-4 py-2.5 text-sm font-semibold text-gray-600"
             >
               Cancel
             </button>
@@ -1004,7 +1108,7 @@ const NewOrderModal = ({
                 createOrderMutation.isPending ||
                 updateOrderMutation.isPending
               }
-              className="rounded-xl bg-black px-6 py-3 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-50"
+              className="min-h-11 rounded-xl bg-black px-4 py-3 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-50 sm:px-6"
             >
               {createOrderMutation.isPending ||
               updateOrderMutation.isPending

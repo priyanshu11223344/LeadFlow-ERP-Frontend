@@ -1,176 +1,183 @@
 import {
-    useState,
-  } from "react";
-  
-  import {
-    loginUser,
-  } from "../features/auth/authAPI";
-  
-  import {
-    useAuth,
-  } from "../context/AuthContext";
-  
-  const Login = () => {
-    const {
-      login,
-    } = useAuth();
-  
-    const [email, setEmail] =
-      useState("");
-  
-    const [
-      password,
-      setPassword,
-    ] = useState("");
-  
-    const [
-      loading,
-      setLoading,
-    ] = useState(false);
-  
-    const handleSubmit =
-      async (e) => {
-        e.preventDefault();
-  
-        try {
-          setLoading(true);
-  
-          const response =
-            await loginUser({
-              email,
-              password,
-            });
-  
-          login(
-            response.data.user,
-            response.data.token
-          );
-  
-          window.location.reload();
-        } catch (error) {
-          alert(
-            error?.response?.data
-              ?.message ||
-              "Login Failed"
-          );
-        } finally {
-          setLoading(false);
-        }
-      };
-  
-    return (
-      <div className="relative min-h-screen flex items-center justify-center bg-slate-50 overflow-hidden px-4 font-sans">
-        {/* Premium ambient background glows */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-violet-200 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
-  
-        <div className="relative w-full max-w-md z-10">
+  useState,
+} from "react";
+import {
+  ArrowRight,
+  BarChart3,
+  Boxes,
+  FileText,
+  TrendingUp,
+} from "lucide-react";
+
+import {
+  useAuth,
+} from "../context/AuthContext";
+import {
+  loginUser,
+} from "../features/auth/authAPI";
+
+const Login = () => {
+  const { login } = useAuth();
+  const [email, setEmail] =
+    useState("");
+  const [password, setPassword] =
+    useState("");
+  const [loading, setLoading] =
+    useState(false);
+
+  const handleSubmit =
+    async (event) => {
+      event.preventDefault();
+
+      try {
+        setLoading(true);
+        const response =
+          await loginUser({
+            email,
+            password,
+          });
+
+        login(
+          response.data.user,
+          response.data.token
+        );
+        window.location.reload();
+      } catch (error) {
+        alert(
+          error?.response?.data
+            ?.message ||
+          "Login Failed"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+  return (
+    <main className="min-h-screen bg-[#f8f8f7] p-3 sm:p-6">
+      <div className="mx-auto grid min-h-[calc(100vh-1.5rem)] max-w-[1400px] overflow-hidden rounded-[28px] bg-[#efefee] lg:grid-cols-[1.15fr_0.85fr]">
+        <section className="relative hidden overflow-hidden p-10 lg:flex lg:flex-col lg:justify-between">
+          <div className="relative z-10 flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#202020] text-white">
+              <TrendingUp className="h-6 w-6" />
+            </span>
+            <span className="text-xl font-bold">LeadFlow</span>
+          </div>
+
+          <div className="relative z-10 max-w-xl">
+            <span className="inline-flex rounded-full bg-white/70 px-3 py-1.5 text-xs font-bold text-[#6553a9]">
+              Your entire sales operation, together
+            </span>
+            <h1 className="mt-5 text-5xl font-bold leading-[1.02] tracking-[-0.055em] text-[#202020]">
+              Build momentum without the busywork.
+            </h1>
+            <p className="mt-5 max-w-lg text-base leading-7 text-slate-600">
+              Move from lead to quotation, order, dispatch, invoice, and payment inside one beautifully calm workspace.
+            </p>
+
+            <div className="mt-10 grid grid-cols-3 gap-3">
+              {[
+                [FileText, "Quotations"],
+                [Boxes, "Operations"],
+                [BarChart3, "Insights"],
+              ].map(([Icon, label]) => (
+                <div
+                  key={label}
+                  className="rounded-2xl bg-white/70 p-4 backdrop-blur"
+                >
+                  <Icon className="h-5 w-5 text-[#6553a9]" />
+                  <p className="mt-5 text-sm font-bold">
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lf-orb -right-10 top-24 opacity-80" />
+          <div className="absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-[#d8ceff]/70 blur-3xl" />
+        </section>
+
+        <section className="flex items-center justify-center p-4 sm:p-8 lg:p-12">
           <form
             onSubmit={handleSubmit}
-            className="bg-white/80 backdrop-blur-lg p-8 rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/50 space-y-6"
+            className="w-full max-w-md rounded-[26px] bg-white p-6 shadow-xl shadow-black/[0.04] sm:p-9"
           >
-            {/* Header & Logo */}
-            <div className="flex flex-col items-center space-y-2">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 flex items-center justify-center shadow-lg shadow-slate-900/10">
-                <svg
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M13 10V3L4 14h7v7l9-11h-7z"
-                  />
-                </svg>
-              </div>
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight mt-3">
-                LeadFlow
-              </h2>
-              <p className="text-sm text-slate-500 font-medium">
-                Enter your credentials to access your account
-              </p>
+            <div className="mb-8 lg:hidden">
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#202020] text-white">
+                <TrendingUp className="h-5 w-5" />
+              </span>
             </div>
-  
-            {/* Form Fields */}
-            <div className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 tracking-wider uppercase ml-1">
-                  Email Address
-                </label>
+
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8b75dc]">
+              Welcome back
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-[-0.04em] text-[#202020]">
+              Sign in to LeadFlow
+            </h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">
+              Enter your workspace credentials to continue.
+            </p>
+
+            <div className="mt-8 space-y-5">
+              <label className="block space-y-2">
+                <span className="text-xs font-bold text-slate-600">
+                  Email address
+                </span>
                 <input
                   type="email"
-                  placeholder="Email"
+                  placeholder="you@company.com"
                   value={email}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setEmail(
-                      e.target.value
+                      event.target.value
                     )
                   }
-                  className="w-full border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 bg-white/50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+                  className="h-12 w-full rounded-2xl border border-slate-200 bg-[#fbfbfa] px-4 text-sm outline-none transition focus:border-[#a996ef] focus:ring-4 focus:ring-[#a996ef]/10"
                   required
                 />
-              </div>
-  
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 tracking-wider uppercase ml-1">
+              </label>
+
+              <label className="block space-y-2">
+                <span className="text-xs font-bold text-slate-600">
                   Password
-                </label>
+                </span>
                 <input
                   type="password"
-                  placeholder="Password"
+                  placeholder="Your password"
                   value={password}
-                  onChange={(e) =>
+                  onChange={(event) =>
                     setPassword(
-                      e.target.value
+                      event.target.value
                     )
                   }
-                  className="w-full border border-slate-200 px-4 py-3 rounded-2xl text-slate-900 bg-white/50 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200"
+                  className="h-12 w-full rounded-2xl border border-slate-200 bg-[#fbfbfa] px-4 text-sm outline-none transition focus:border-[#a996ef] focus:ring-4 focus:ring-[#a996ef]/10"
                   required
                 />
-              </div>
+              </label>
             </div>
-  
-            {/* Action Button */}
+
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-slate-900 hover:bg-slate-800 disabled:bg-slate-400 text-white font-semibold py-3.5 rounded-2xl transition-all duration-200 shadow-lg shadow-slate-900/10 hover:shadow-xl hover:shadow-slate-900/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:scale-[0.98] disabled:scale-100 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="mt-7 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#202020] text-sm font-bold text-white transition hover:-translate-y-0.5 hover:bg-black disabled:opacity-50"
             >
-              {loading && (
-                <svg
-                  className="animate-spin h-5 w-5 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
+              {loading
+                ? "Signing in..."
+                : "Continue"}
+              {!loading && (
+                <ArrowRight className="h-4 w-4" />
               )}
-              <span>
-                {loading
-                  ? "Logging In..."
-                  : "Login"}
-              </span>
             </button>
+
+            <p className="mt-6 text-center text-xs text-slate-400">
+              Secure access to your LeadFlow workspace
+            </p>
           </form>
-        </div>
+        </section>
       </div>
-    );
-  };
-  
-  export default Login;
+    </main>
+  );
+};
+
+export default Login;

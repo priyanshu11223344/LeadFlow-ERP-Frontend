@@ -112,12 +112,12 @@ const DispatchModal = ({
     };
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-0 backdrop-blur-sm sm:items-center sm:p-4">
 
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-xl overflow-hidden">
+      <div className="max-h-[96vh] w-full max-w-5xl overflow-hidden rounded-t-[26px] bg-white shadow-xl sm:rounded-2xl">
 
         {/* HEADER */}
-        <div className="flex justify-between items-center px-8 py-6 border-b border-gray-100">
+        <div className="flex items-center justify-between border-b border-gray-100 px-4 py-4 sm:px-8 sm:py-6">
 
           <div>
             <h2 className="text-xl font-bold">
@@ -137,9 +137,9 @@ const DispatchModal = ({
         </div>
 
         {/* BODY */}
-        <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[76vh] space-y-6 overflow-y-auto p-4 sm:max-h-[70vh] sm:p-8">
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6">
 
             <div>
               <label className="text-xs font-bold text-gray-600 uppercase">
@@ -219,7 +219,7 @@ const DispatchModal = ({
 
           {/* ITEMS TABLE */}
 
-          <div className="border border-gray-100 rounded-2xl overflow-hidden">
+          <div className="hidden overflow-hidden rounded-2xl border border-gray-100 md:block">
 
             <table className="w-full">
 
@@ -341,15 +341,62 @@ const DispatchModal = ({
 
           </div>
 
+          <div className="space-y-3 md:hidden">
+            {order.items.map((item, index) => {
+              const remaining =
+                item.allocatedQuantity -
+                item.dispatchedQuantity;
+
+              return (
+                <div key={item.sku} className="rounded-2xl border border-gray-100 p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-bold text-gray-900">{item.itemName}</p>
+                      <p className="text-xs text-gray-500">{item.sku}</p>
+                    </div>
+                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-bold text-blue-700">
+                      {remaining} remaining
+                    </span>
+                  </div>
+                  <div className="mt-3 grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2 text-center">
+                    <div className="rounded-xl bg-gray-50 p-2">
+                      <p className="text-[9px] font-bold uppercase text-gray-400">Ordered</p>
+                      <p className="font-bold">{item.quantity}</p>
+                    </div>
+                    <div className="rounded-xl bg-gray-50 p-2">
+                      <p className="text-[9px] font-bold uppercase text-gray-400">Allocated</p>
+                      <p className="font-bold">{item.allocatedQuantity}</p>
+                    </div>
+                    <div className="rounded-xl bg-gray-50 p-2">
+                      <p className="text-[9px] font-bold uppercase text-gray-400">Sent</p>
+                      <p className="font-bold">{item.dispatchedQuantity}</p>
+                    </div>
+                  </div>
+                  <label className="mt-3 block">
+                    <span className="text-[10px] font-bold uppercase text-gray-500">Dispatch quantity</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max={remaining}
+                      value={dispatchItems[index]?.quantity || 0}
+                      onChange={(event) => handleQtyChange(index, event.target.value)}
+                      className="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2 text-center"
+                    />
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+
         </div>
 
         {/* FOOTER */}
 
-        <div className="flex justify-end gap-4 px-8 py-6 border-t border-gray-100">
+        <div className="grid grid-cols-[auto_1fr] gap-3 border-t border-gray-100 px-4 py-4 sm:flex sm:justify-end sm:gap-4 sm:px-8 sm:py-6">
 
           <button
             onClick={onClose}
-            className="text-gray-600"
+            className="min-h-11 px-3 text-gray-600"
           >
             Cancel
           </button>
@@ -358,7 +405,7 @@ const DispatchModal = ({
             onClick={
               handleCreateDispatch
             }
-            className="bg-black text-white px-6 py-3 rounded-xl font-semibold"
+            className="min-h-11 rounded-xl bg-black px-5 py-3 font-semibold text-white"
           >
             Create Dispatch
           </button>

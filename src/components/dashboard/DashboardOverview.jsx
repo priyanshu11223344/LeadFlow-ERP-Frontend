@@ -1,239 +1,356 @@
-import React from 'react';
-import { User, DollarSign, Clock, Package, Check, Sparkles, TrendingUp, Plus } from 'lucide-react';
-import { useGetLeads } from "../../features/leads/leadHooks";
-import { useGetDeals } from "../../features/deals/dealHooks";
-import { useGetOrders } from "../../features/orders/orderHooks";
-import { useGetInventory } from "../../features/inventory/inventoryHooks";
+import React from "react";
+import {
+  ArrowUpRight,
+  BadgeIndianRupee,
+  Boxes,
+  CheckCircle2,
+  Clock3,
+  Package,
+  Plus,
+  Sparkles,
+  TrendingUp,
+  UserRound,
+} from "lucide-react";
 
-const DashboardOverview = ({ onOpenModal }) => {
-  const { data: leadsData } = useGetLeads();
-  const { data: dealsData } = useGetDeals();
-  const { data: ordersData } = useGetOrders();
-  const { data: inventoryData } = useGetInventory();
+import {
+  useGetDeals,
+} from "../../features/deals/dealHooks";
+import {
+  useGetInventory,
+} from "../../features/inventory/inventoryHooks";
+import {
+  useGetLeads,
+} from "../../features/leads/leadHooks";
+import {
+  useGetOrders,
+} from "../../features/orders/orderHooks";
+
+const DashboardOverview = ({
+  onOpenModal,
+}) => {
+  const { data: leadsData } =
+    useGetLeads();
+  const { data: dealsData } =
+    useGetDeals();
+  const { data: ordersData } =
+    useGetOrders();
+  const { data: inventoryData } =
+    useGetInventory();
 
   const leads = leadsData?.data || [];
   const deals = dealsData?.data || [];
   const orders = ordersData?.data || [];
-  const inventory = inventoryData?.data || [];
-  const totalLeads = leads.length;
-
-  const totalOrders = orders.length;
-
-  const lowStockCount = inventory.filter(
-    (item) =>
-      item.status === "LOW_STOCK" ||
-      item.status === "OUT_OF_STOCK" ||
-      item.status === "TO_BE_ORDERED"
-  ).length;
-
-  const totalPipeline = deals.reduce(
-    (sum, deal) =>
-      deal.status !== "lost" &&
+  const inventory =
+    inventoryData?.data || [];
+  const wonDeals =
+    deals.filter(
+      (deal) =>
+        deal.status === "won"
+    );
+  const totalPipeline =
+    deals.reduce(
+      (sum, deal) =>
+        deal.status !== "lost" &&
         deal.status !== "won"
-        ? sum + Number(deal.amount || 0)
-        : sum,
-    0
-  );
+          ? sum +
+            Number(deal.amount || 0)
+          : sum,
+      0
+    );
+  const lowStock =
+    inventory.filter((item) =>
+      [
+        "LOW_STOCK",
+        "OUT_OF_STOCK",
+        "TO_BE_ORDERED",
+      ].includes(item.status)
+    );
+  const completionRate =
+    orders.length > 0
+      ? Math.round(
+          (
+            orders.filter((order) =>
+              [
+                "DELIVERED",
+                "COMPLETED",
+              ].includes(order.status)
+            ).length /
+            orders.length
+          ) * 100
+        )
+      : 0;
 
-  const wonDeals = deals.filter(
-    (deal) => deal.status === "won"
-  ).length;
   const stats = [
     {
-      title: "Total Leads",
-      value: totalLeads,
-      icon: User,
-      color: "text-blue-600",
-      bg: "bg-blue-50",
+      label: "Active leads",
+      value: leads.length,
+      note: "Across your pipeline",
+      icon: UserRound,
+      tone: "bg-[#eeeaff]",
     },
     {
-      title: "Total Pipeline",
-      value: `₹${totalPipeline.toLocaleString()}`,
-      icon: DollarSign,
-      color: "text-green-600",
-      bg: "bg-green-50",
+      label: "Pipeline value",
+      value: `₹${totalPipeline.toLocaleString("en-IN")}`,
+      note: "Open opportunities",
+      icon: BadgeIndianRupee,
+      tone: "bg-[#f7e8f6]",
     },
     {
-      title: "Total Orders",
-      value: totalOrders,
-      icon: Clock,
-      color: "text-purple-600",
-      bg: "bg-purple-50",
+      label: "Total orders",
+      value: orders.length,
+      note: `${completionRate}% fulfilled`,
+      icon: Boxes,
+      tone: "bg-[#e8f2ff]",
     },
     {
-      title: "Low Stock",
-      value: lowStockCount,
+      label: "Stock alerts",
+      value: lowStock.length,
+      note: "Needs attention",
       icon: Package,
-      color: "text-red-600",
-      bg: "bg-red-50",
+      tone: "bg-[#fff0e3]",
     },
   ];
 
+  const recentLeads =
+    leads
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+      )
+      .slice(0, 4);
+  const recentOrders =
+    orders
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt) -
+          new Date(a.createdAt)
+      )
+      .slice(0, 4);
+
   return (
-    <div className="max-w-screen-2xl mx-auto space-y-12">
-      {/* Header (Matched exactly to photo) */}
-      <div className="flex justify-between items-end gap-4">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-extrabold text-gray-950 tracking-tighter">Overview</h2>
-          <p className="text-gray-500 text-sm font-medium">Manage your business growth effectively.</p>
-        </div>
-        {/* <button
-          onClick={onOpenModal}
-          className="bg-black text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2.5 hover:bg-gray-800 transition-all shadow-md group"
-        >
-          <Plus className="w-5 h-5 group-hover:scale-110 transition-transform stroke-white stroke-[2px]" />
-          New Lead
-        </button> */}
-      </div>
-
-      {/* Stats Grid & Separated "Won Deals" */}
-      <div className="space-y-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {stats.map((stat, i) => {
-            const Icon = stat.icon;
-            return (
-              <div key={i} className="bg-white p-7 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                <div className={`${stat.bg} ${stat.color} w-12 h-12 rounded-xl flex items-center justify-center`}>
-                  <Icon className="w-6 h-6 stroke-[1.5px]" />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm font-medium">{stat.title}</p>
-                  <h3 className="text-3xl font-extrabold mt-1 text-gray-950 tracking-tighter">{stat.value}</h3>
-                </div>
-              </div>
-            );
-          })}
+    <div className="mx-auto max-w-[1500px] space-y-5">
+      <section className="grid gap-5 xl:grid-cols-[1.65fr_0.85fr]">
+        <div className="lf-lavender relative min-h-[210px] overflow-hidden rounded-[24px] p-6 sm:p-8">
+          <div className="relative z-10 max-w-xl">
+            <span className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/60 px-3 py-1.5 text-xs font-bold text-[#51438f] backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5" />
+              LeadFlow workspace
+            </span>
+            <h2 className="max-w-lg text-3xl font-bold leading-[1.05] tracking-[-0.045em] text-[#202020] sm:text-4xl">
+              Your business works better together.
+            </h2>
+            <p className="mt-3 max-w-md text-sm leading-6 text-slate-700/80">
+              Keep leads, quotations, orders, stock, dispatches, and invoices moving from one calm workspace.
+            </p>
+            <button
+              type="button"
+              onClick={onOpenModal}
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#202020] px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-black/10 transition-transform hover:-translate-y-0.5"
+            >
+              <Plus className="h-4 w-4" />
+              Add new lead
+            </button>
+          </div>
+          <div className="lf-orb -right-8 -top-6 hidden sm:block" />
         </div>
 
-        {/* The uniquely positioned 'Won Deals' card */}
-        <div className="w-full md:w-1/3 lg:w-1/4">
-          <div className="bg-white p-7 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-            <div className="bg-green-50 text-green-600 w-12 h-12 rounded-xl flex items-center justify-center">
-              <Check className="w-6 h-6 stroke-[1.5px]" />
-            </div>
+        <div className="lf-panel flex min-h-[210px] flex-col justify-between p-6">
+          <div className="flex items-start justify-between">
             <div>
-              <p className="text-gray-500 text-sm font-medium">Won Deals</p>
-              <h3 className="text-3xl font-extrabold mt-1 text-gray-950 tracking-tighter">{wonDeals}</h3>
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-slate-400">
+                Performance
+              </p>
+              <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                Order completion
+              </h3>
+            </div>
+            <span className="rounded-full bg-[#202020] px-3 py-1.5 text-xs font-bold text-white">
+              {completionRate}%
+            </span>
+          </div>
+          <div>
+            <div className="mb-3 flex items-end gap-2">
+              <span className="text-5xl font-bold tracking-[-0.06em]">
+                {orders.length}
+              </span>
+              <span className="pb-1 text-sm font-medium text-slate-400">
+                total orders
+              </span>
+            </div>
+            <div className="h-3 overflow-hidden rounded-full bg-[#eeece9]">
+              <div
+                className="h-full rounded-full bg-[#b9a9f5] transition-all"
+                style={{
+                  width: `${completionRate}%`,
+                }}
+              />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* FIXED BOTTOM SECTION: Recent Leads and High Value Deals in the same line */}
-      <div className="flex flex-col lg:flex-row gap-8 items-start pb-10">
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <article
+              key={stat.label}
+              className="lf-panel flex items-center justify-between gap-4 p-5"
+            >
+              <div>
+                <p className="text-xs font-semibold text-slate-500">
+                  {stat.label}
+                </p>
+                <p className="mt-2 text-2xl font-bold tracking-[-0.04em] text-[#202020]">
+                  {stat.value}
+                </p>
+                <p className="mt-1 text-[11px] font-medium text-slate-400">
+                  {stat.note}
+                </p>
+              </div>
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${stat.tone}`}>
+                <Icon className="h-5 w-5 text-[#202020]" />
+              </div>
+            </article>
+          );
+        })}
+      </section>
 
-        {/* RECENT LEADS (Matched width and padding to photo) */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex-1 w-full">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-extrabold text-gray-950 tracking-tight flex items-center gap-3">
-              Recent Leads
-            </h3>
-            <span className="text-gray-400 font-bold text-2xl cursor-pointer">›</span>
+      <section className="grid gap-5 xl:grid-cols-[1fr_1fr_0.78fr]">
+        <article className="lf-panel p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                People
+              </p>
+              <h3 className="mt-1 text-xl font-bold">
+                Recent leads
+              </h3>
+            </div>
+            <ArrowUpRight className="h-5 w-5 text-slate-400" />
           </div>
-          <div className="space-y-6">
-            {leads
-              .slice()
-              .sort(
-                (a, b) =>
-                  new Date(b.createdAt) -
-                  new Date(a.createdAt)
-              )
-              .slice(0, 5)
-              .map((lead) => (
+
+          <div className="space-y-3">
+            {recentLeads.length > 0 ? (
+              recentLeads.map((lead, index) => (
                 <div
                   key={lead._id}
-                  className="flex justify-between items-center py-1"
+                  className="lf-soft-panel flex items-center gap-3 p-3"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-gray-100 text-gray-700 rounded-full flex items-center justify-center font-bold text-lg uppercase">
-                      {lead.name?.charAt(0)}
-                    </div>
-
-                    <div>
-                      <p className="text-base font-bold text-gray-950">
-                        {lead.name}
-                      </p>
-
-                      <p className="text-xs text-gray-400 font-medium">
-                        {lead.companyName || "No Company"}
-                      </p>
-                    </div>
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
+                      [
+                        "bg-[#d9d0ff]",
+                        "bg-[#f5d7ec]",
+                        "bg-[#d9edff]",
+                        "bg-[#fce4c9]",
+                      ][index % 4]
+                    }`}
+                  >
+                    {lead.name?.charAt(0)}
                   </div>
-
-                  <div className="text-right">
-                    <p className="text-[11px] text-gray-400 uppercase font-extrabold tracking-wider">
-                      Created At
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold">
+                      {lead.name}
                     </p>
-
-                    <p className="text-xs text-gray-600 font-semibold">
-                      {new Date(
-                        lead.createdAt
-                      ).toLocaleDateString()}
+                    <p className="truncate text-xs text-slate-400">
+                      {lead.companyName || lead.email}
                     </p>
                   </div>
+                  <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-slate-500">
+                    {lead.leadStage}
+                  </span>
                 </div>
-              ))}
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-slate-400">
+                No leads yet.
+              </p>
+            )}
           </div>
-        </div>
+        </article>
 
-        {/* HIGH VALUE DEALS (Matched styling and WIN badges to photo) */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8 flex-1 w-full">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-xl font-extrabold text-gray-950 tracking-tight flex items-center gap-3">
-              High Value Deals
-            </h3>
-            <TrendingUp className="w-5 h-5 text-gray-400" />
+        <article className="lf-panel p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                Activity
+              </p>
+              <h3 className="mt-1 text-xl font-bold">
+                Recent orders
+              </h3>
+            </div>
+            <Clock3 className="h-5 w-5 text-slate-400" />
           </div>
-          <div className="space-y-6">
-            {deals
-              .filter(
-                (deal) =>
-                  deal.status === "won"
-              )
-              .sort(
-                (a, b) =>
-                  Number(b.amount) -
-                  Number(a.amount)
-              )
-              .slice(0, 5)
-              .map((deal) => (
+
+          <div className="space-y-3">
+            {recentOrders.length > 0 ? (
+              recentOrders.map((order) => (
                 <div
-                  key={deal._id}
-                  className="flex justify-between items-center py-1"
+                  key={order._id}
+                  className="flex items-center gap-3 border-b border-black/[0.05] py-3 last:border-0"
                 >
-                  <div>
-                    <p className="text-base font-bold text-gray-950">
-                      {deal.dealName}
-                    </p>
-
-                    <div className="flex gap-2.5 items-center mt-1.5">
-                      <span className="text-[10px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-extrabold tracking-wide">
-                        WIN
-                      </span>
-
-                      <span className="text-xs text-gray-400 font-medium tracking-tight">
-                        Target:{" "}
-                        {deal.closeDate
-                          ? new Date(
-                            deal.closeDate
-                          ).toLocaleDateString()
-                          : "-"}
-                      </span>
-                    </div>
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#202020] text-white">
+                    <CheckCircle2 className="h-4 w-4" />
                   </div>
-
-                  <p className="text-lg font-bold text-gray-950 tracking-tight">
-                  ₹
-                    {Number(
-                      deal.amount || 0
-                    ).toLocaleString()}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold">
+                      {order.poNumber}
+                    </p>
+                    <p className="truncate text-xs text-slate-400">
+                      {order.clientId?.clientName || "Client"} · {order.items?.length || 0} items
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold">
+                      ₹{Number(order.grandTotal || 0).toLocaleString("en-IN")}
+                    </p>
+                    <p className="text-[10px] font-semibold text-slate-400">
+                      {order.status?.replaceAll("_", " ")}
+                    </p>
+                  </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <p className="py-8 text-center text-sm text-slate-400">
+                No orders yet.
+              </p>
+            )}
           </div>
-        </div>
+        </article>
 
-      </div>
+        <div className="space-y-5">
+          <article className="overflow-hidden rounded-[22px] bg-[#202020] p-5 text-white">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#d9d0ff] text-[#202020]">
+                <TrendingUp className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs text-white/55">
+                  Won opportunities
+                </p>
+                <p className="text-2xl font-bold">
+                  {wonDeals.length}
+                </p>
+              </div>
+            </div>
+            <p className="mt-5 text-sm leading-6 text-white/65">
+              ₹{wonDeals.reduce((sum, deal) => sum + Number(deal.amount || 0), 0).toLocaleString("en-IN")} closed value.
+            </p>
+          </article>
+
+          <article className="lf-lavender relative min-h-[190px] overflow-hidden rounded-[22px] p-5">
+            <Sparkles className="h-5 w-5 text-[#6856ae]" />
+            <h3 className="mt-8 max-w-[180px] text-2xl font-bold leading-7 tracking-tight">
+              Turn every signal into progress.
+            </h3>
+            <div className="absolute -bottom-16 -right-14 h-40 w-40 rounded-full border-[25px] border-white/40" />
+          </article>
+        </div>
+      </section>
     </div>
   );
 };
